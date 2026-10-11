@@ -1,6 +1,7 @@
 import type { ExpressionSpecification, GeoJSONSource, Map as MlMap } from 'maplibre-gl'
 import type { Home, IndexData } from '../data/types'
 import { priceShort } from '../lib/format'
+import type { PriceOf } from '../lib/query'
 import { addBubbleIcons } from './bubbleIcon'
 import { DEV_COLORS, HOME_DEV_BREAKS } from './colors'
 
@@ -77,28 +78,28 @@ export function addHomeLayers(map: MlMap): void {
 }
 
 /** Label such as "▼ $350k": the arrow repeats the below/above-model colour so colour is never the only cue. */
-export function labelFor(h: Home, band: IndexData['model']['error_overall']): { label: string; t: 'b' | 'a' | 'n' } {
+export function labelFor(h: Home, band: IndexData['model']['error_overall'], priceOf: PriceOf = (x) => x.price): { label: string; t: 'b' | 'a' | 'n' } {
   const t = h.dev < band.p10 ? 'b' : h.dev > band.p90 ? 'a' : 'n'
-  return { t, label: `${t === 'b' ? '▼ ' : t === 'a' ? '▲ ' : ''}${priceShort(h.price)}` }
+  return { t, label: `${t === 'b' ? '▼ ' : t === 'a' ? '▲ ' : ''}${priceShort(priceOf(h))}` }
 }
 
 const point = (h: Home, props: Record<string, unknown>) => ({
   type: 'Feature' as const, properties: props, geometry: { type: 'Point' as const, coordinates: [h.lon, h.lat] },
 })
 
-export function homesGeoJSON(homes: Home[], band: IndexData['model']['error_overall']) {
+export function homesGeoJSON(homes: Home[], band: IndexData['model']['error_overall'], priceOf: PriceOf) {
   return {
     type: 'FeatureCollection' as const,
-    features: homes.map((h) => point(h, { key: h.key, dev: h.dev, ...labelFor(h, band) })),
+    features: homes.map((h) => point(h, { key: h.key, dev: h.dev, ...labelFor(h, band, priceOf) })),
   }
 }
 
-export function setHomes(map: MlMap, homes: Home[], band: IndexData['model']['error_overall']): void {
-  ;(map.getSource(HL.src) as GeoJSONSource | undefined)?.setData(homesGeoJSON(homes, band) as never)
+export function setHomes(map: MlMap, homes: Home[], band: IndexData['model']['error_overall'], priceOf: PriceOf): void {
+  ;(map.getSource(HL.src) as GeoJSONSource | undefined)?.setData(homesGeoJSON(homes, band, priceOf) as never)
 }
 
-export function setSelected(map: MlMap, h: Home | null, band: IndexData['model']['error_overall']): void {
-  const data = h ? { type: 'FeatureCollection', features: [point(h, labelFor(h, band))] } : empty
+export function setSelected(map: MlMap, h: Home | null, band: IndexData['model']['error_overall'], priceOf: PriceOf): void {
+  const data = h ? { type: 'FeatureCollection', features: [point(h, labelFor(h, band, priceOf))] } : empty
   ;(map.getSource(HL.selSrc) as GeoJSONSource | undefined)?.setData(data as never)
 }
 

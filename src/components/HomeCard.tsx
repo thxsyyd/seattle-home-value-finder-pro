@@ -10,10 +10,12 @@ interface Props {
   home: Home
   band: IndexData['model']['error_overall']
   hovered: boolean
+  /** price shown (as sold, or restated to today's dollars) */
+  price?: number
   style?: CSSProperties
 }
 
-export const HomeCard = memo(function HomeCard({ home: h, band, hovered, style }: Props) {
+export const HomeCard = memo(function HomeCard({ home: h, band, hovered, price, style }: Props) {
   const d = describeDev(h.dev, band)
   return (
     <SearchLink
@@ -26,7 +28,7 @@ export const HomeCard = memo(function HomeCard({ home: h, band, hovered, style }
       onFocus={() => setHovered(h.key, 'list')}
       onBlur={() => setHovered(null)}
     >
-      <span className="card-price">{money(h.price)}</span>
+      <span className="card-price">{money(price ?? h.price)}{price !== undefined && Math.round(price) !== h.price && <small className="was"> (sold {money(h.price)})</small>}</span>
       <span className={`dev dev-${d.tone}`}>
         <span aria-hidden="true">{d.arrow}</span> {d.text}
       </span>

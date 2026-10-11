@@ -13,7 +13,7 @@ const ROW = 112
 const GAP = 8
 
 export function ListPanel() {
-  const { index, rows, loading, zoomedIn } = useOutletContext<ExploreContext>()
+  const { index, rows, loading, zoomedIn, priceOf } = useOutletContext<ExploreContext>()
   const [f, setFilters] = useFilters()
   const [params] = useSearchParams()
   const hover = useHover()
@@ -72,7 +72,7 @@ export function ListPanel() {
               const h = rows[v.index]
               return (
                 <li key={h.key} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: ROW, transform: `translateY(${v.start}px)` }}>
-                  <HomeCard home={h} band={band} hovered={hover.key === h.key} style={{ height: '100%', boxSizing: 'border-box' }} />
+                  <HomeCard home={h} band={band} hovered={hover.key === h.key} price={priceOf(h)} style={{ height: '100%', boxSizing: 'border-box' }} />
                 </li>
               )
             })}

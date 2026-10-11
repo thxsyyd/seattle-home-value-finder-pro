@@ -1,4 +1,7 @@
 import { createBrowserRouter } from 'react-router'
+import { About } from './routes/About'
+import { Afford } from './routes/Afford'
+import { Compare } from './routes/Compare'
 import { Explore } from './routes/Explore'
 import { HomeDetail } from './routes/HomeDetail'
 import { ZipDetail } from './routes/ZipDetail'
@@ -16,9 +19,9 @@ export const router = createBrowserRouter(
         { path: 'home/:id', element: <HomeDetail /> },
       ],
     },
-    { path: '/compare/:a/:b', element: <Placeholder title="Compare" /> },
-    { path: '/afford', element: <Placeholder title="Affordability calculator" /> },
-    { path: '/about', element: <Placeholder title="About this project" /> },
+    { path: '/compare/:a/:b', element: <Compare /> },
+    { path: '/afford', element: <Afford /> },
+    { path: '/about', element: <About /> },
     { path: '*', element: <Placeholder title="Page not found" /> },
   ],
   { basename: import.meta.env.BASE_URL },

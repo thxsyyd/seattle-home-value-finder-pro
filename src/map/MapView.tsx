@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react'
 import { fetchJson } from '../data/client'
 import type { BBox, Home, IndexData } from '../data/types'
 import type { Filters } from '../lib/filters'
+import type { PriceOf } from '../lib/query'
 import { money } from '../lib/format'
 import { setHovered, useHover } from '../state/hoverStore'
 import { Legend } from './Legend'
@@ -39,6 +40,7 @@ interface Props {
   /** filtered sales for every zip near the viewport (drawn as dots / clusters / price bubbles) */
   homes: Home[]
   selected: Home | null
+  priceOf: PriceOf
   onSelectHome: (key: string) => void
   /** `persist` is false for the initial load, so merely opening the page doesn't rewrite the URL */
   onViewChange: (v: ViewState, persist: boolean) => void
@@ -65,7 +67,7 @@ function popupNode(title: string, lines: string[]): HTMLElement {
   return el
 }
 
-export default function MapView({ index, filters, homes, selected, onSelectHome, onViewChange }: Props) {
+export default function MapView({ index, filters, homes, selected, priceOf, onSelectHome, onViewChange }: Props) {
   const box = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MlMap | null>(null)
   const [ready, setReady] = useState(false)
@@ -207,8 +209,8 @@ export default function MapView({ index, filters, homes, selected, onSelectHome,
   useEffect(() => {
     const map = mapRef.current
     if (!ready || !map || !band) return
-    setHomes(map, homes, band)
-  }, [ready, homes, band])
+    setHomes(map, homes, band, priceOf)
+  }, [ready, homes, band, priceOf])
   useEffect(() => {
     const map = mapRef.current
     if (!ready || !map) return
@@ -221,11 +223,11 @@ export default function MapView({ index, filters, homes, selected, onSelectHome,
   useEffect(() => {
     const map = mapRef.current
     if (!ready || !map || !band) return
-    setSelected(map, selected, band)
+    setSelected(map, selected, band, priceOf)
     if (selected && !map.getBounds().contains([selected.lon, selected.lat])) {
       map.easeTo({ center: [selected.lon, selected.lat], zoom: Math.max(map.getZoom(), 14), duration: 600 })
     }
-  }, [ready, selected, band])
+  }, [ready, selected, band, priceOf])
 
   // hover from the list (or the map) -> feature-state highlight
   useEffect(() => {

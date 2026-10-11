@@ -123,5 +123,5 @@ export const BEST_DEALS: Partial<Filters> = { maxp: 500_000, dv: -0.1 }
 
 /** Number of active (non-default, non-viewport) filters, for the "Filters (3)" badge. */
 export function activeFilterCount(f: Filters): number {
-  return [f.minp, f.maxp, f.beds, f.baths, f.sfMin ?? f.sfMax, f.ybMin ?? f.ybMax, f.gr, f.wf, f.dv].filter((v) => v !== undefined).length
+  return [f.minp, f.maxp, f.beds, f.baths, f.sfMin ?? f.sfMax, f.ybMin ?? f.ybMax, f.gr, f.wf, f.dv].filter((v) => v !== undefined).length + (f.adj !== 'none' ? 1 : 0)
 }

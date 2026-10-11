@@ -7,7 +7,8 @@ import { useHome } from '../data/useHome'
 import { useIndex } from '../data/useIndex'
 import { useViewportHomes } from '../data/useViewportHomes'
 import { viewBbox } from '../lib/geo'
-import { filterHomes, inBbox, sortHomes } from '../lib/query'
+import { makePriceOf } from '../lib/priceIndex'
+import { filterHomes, inBbox, sortHomes, type PriceOf } from '../lib/query'
 import { MapControls } from '../map/MapControls'
 import type { ViewState } from '../map/MapView'
 import { DEFAULT_VIEW } from '../map/view'
@@ -27,6 +28,8 @@ export interface ExploreContext {
   rows: Home[]
   loading: boolean
   zoomedIn: boolean
+  /** price used for display, filtering and sorting (as sold, or restated to today's dollars) */
+  priceOf: PriceOf
 }
 
 // Layout route: the map lives here so it stays mounted while the side panel changes.
@@ -46,13 +49,15 @@ export function Explore() {
   const { homes, loading } = useViewportHomes(bbox, index.data, 220, zoomedIn)
 
   const f = filters
+  const pi = index.data?.priceIndex
+  const priceOf = useMemo(() => makePriceOf(f.adj, pi), [f.adj, pi])
   const filterKey = JSON.stringify([f.minp, f.maxp, f.beds, f.baths, f.sfMin, f.sfMax, f.ybMin, f.ybMax, f.gr, f.wf, f.dv])
   // eslint-disable-next-line react-hooks/exhaustive-deps -- `f` is only read through filterKey
-  const filtered = useMemo(() => filterHomes(homes, f), [homes, filterKey])
+  const filtered = useMemo(() => filterHomes(homes, f, priceOf), [homes, filterKey, priceOf])
   const rows = useMemo(
-    () => sortHomes(f.follow ? inBbox(filtered, bbox) : filtered, f.sort),
+    () => sortHomes(f.follow ? inBbox(filtered, bbox) : filtered, f.sort, priceOf),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [filtered, bbox, f.sort, f.follow],
+    [filtered, bbox, f.sort, f.follow, priceOf],
   )
 
   const homeMatch = useMatch('/home/:id')
@@ -68,14 +73,17 @@ export function Explore() {
   const onSelectHome = useCallback((key: string) => navigate({ pathname: `/home/${key}`, search }), [navigate, search])
 
   const detail = pathname !== '/'
-  const ctx: ExploreContext = { index: index.data, view, filtered, rows, loading, zoomedIn }
+  const ctx: ExploreContext = { index: index.data, view, filtered, rows, loading, zoomedIn, priceOf }
 
   return (
     <div className="explore" data-view={filters.view} data-detail={detail}>
       <a className="skip-link" href="#panel">Skip to results</a>
       <header className="topbar">
         <Link to={{ pathname: '/', search }} className="brand">Seattle Home Value Finder</Link>
-        <Link to="/about">About</Link>
+        <nav className="topnav" aria-label="Site">
+          <Link to={{ pathname: '/afford', search }}>Affordability</Link>
+          <Link to="/about">About</Link>
+        </nav>
       </header>
       <DisclaimerBanner range={index.data?.dataRange} />
       <div className="split">
@@ -85,7 +93,7 @@ export function Explore() {
         </section>
         <div className="mapwrap">
           <Suspense fallback={<p style={{ padding: 'var(--s-5)' }}>Loading map…</p>}>
-            <MapView index={index.data} filters={filters} homes={filtered} selected={selected} onSelectHome={onSelectHome} onViewChange={onViewChange} />
+            <MapView index={index.data} filters={filters} homes={filtered} priceOf={priceOf} selected={selected} onSelectHome={onSelectHome} onViewChange={onViewChange} />
           </Suspense>
           <div className="mapctl">
             <MapControls layer={filters.layer} metric={filters.metric} onLayer={(layer) => setFilters({ layer })} onMetric={(metric) => setFilters({ metric })} />
