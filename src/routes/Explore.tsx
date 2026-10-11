@@ -79,31 +79,32 @@ export function Explore() {
     <div className="explore" data-view={filters.view} data-detail={detail}>
       <a className="skip-link" href="#panel">Skip to results</a>
       <header className="topbar">
-        <Link to={{ pathname: '/', search }} className="brand">Seattle Home Value Finder</Link>
+        <h1 className="sr-only">Seattle Home Value Finder: King County home sales, 2014–2015</h1>
+        <Link to={{ pathname: '/', search }} className="brand" aria-label="Seattle Home Value Finder, home">Seattle Home Value Finder</Link>
         <nav className="topnav" aria-label="Site">
           <Link to={{ pathname: '/afford', search }}>Affordability</Link>
           <Link to="/about">About</Link>
         </nav>
       </header>
       <DisclaimerBanner range={index.data?.dataRange} />
-      <div className="split">
-        <section id="panel" className="panel" aria-label="Results">
+      <main className="split">
+        <section id="panel" className="panel" aria-label="Results" tabIndex={-1}>
           {!detail && <FilterBar filters={filters} index={index.data} onChange={(patch) => setFilters(patch)} />}
           <Outlet context={ctx} />
         </section>
-        <div className="mapwrap">
+        <section className="mapwrap" aria-label="Map and legend">
           <Suspense fallback={<p style={{ padding: 'var(--s-5)' }}>Loading map…</p>}>
             <MapView index={index.data} filters={filters} homes={filtered} priceOf={priceOf} selected={selected} onSelectHome={onSelectHome} onViewChange={onViewChange} />
           </Suspense>
           <div className="mapctl">
             <MapControls layer={filters.layer} metric={filters.metric} onLayer={(layer) => setFilters({ layer })} onMetric={(metric) => setFilters({ metric })} />
           </div>
-        </div>
-      </div>
-      <div className="viewtoggle" role="group" aria-label="Show">
+        </section>
+      </main>
+      <nav className="viewtoggle" aria-label="Show list or map">
         <button type="button" aria-pressed={filters.view === 'list'} onClick={() => setFilters({ view: 'list' })}>List</button>
         <button type="button" aria-pressed={filters.view === 'map'} onClick={() => setFilters({ view: 'map' })}>Map</button>
-      </div>
+      </nav>
     </div>
   )
 }

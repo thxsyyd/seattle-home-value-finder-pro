@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { useNavigate, useOutletContext, useParams } from 'react-router'
 import { SearchLink } from '../components/SearchLink'
 import { useZipHomes } from '../data/useZipHomes'
+import { useFocusOnMount } from '../lib/useFocusOnMount'
 import { money, signedPct } from '../lib/format'
 import { useFilters } from '../state/useFilters'
 import type { ExploreContext } from './Explore'
@@ -13,13 +14,14 @@ export function ZipDetail() {
   const { index } = useOutletContext<ExploreContext>()
   const [, setFilters] = useFilters()
   const navigate = useNavigate()
+  const heading = useFocusOnMount<HTMLHeadingElement>(zip)
   const row = index?.zips.find((z) => z.zip === zip)
   const homes = useZipHomes(row ? zip : undefined, index)
 
   return (
     <div className="panel-pad detail">
       <SearchLink to="/" className="backlink">← Back to results</SearchLink>
-      <h1>ZIP {zip}</h1>
+      <h1 ref={heading} tabIndex={-1}>ZIP {zip}</h1>
       {!index && <p>Loading…</p>}
       {index && !row && <p>No sales from this ZIP are in the data.</p>}
       {row && index && (

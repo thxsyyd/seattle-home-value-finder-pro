@@ -4,6 +4,9 @@ import { getParsed, loadZip } from './api'
 import type { BBox, Home, IndexData } from './types'
 import { useDebouncedValue } from './useDebouncedValue'
 
+/** Chunk arrivals closer together than this are merged into one update. */
+const BATCH_MS = 80
+
 const keyOf = (b: BBox) => b.map((n) => n.toFixed(3)).join(',')
 
 /**
@@ -14,6 +17,7 @@ export function useViewportHomes(bbox: BBox | null, index: IndexData | undefined
   const debouncedKey = useDebouncedValue(bbox ? keyOf(bbox) : null, debounceMs)
   const [tick, setTick] = useState(0)
   const controllers = useRef(new Map<string, AbortController>())
+  const flushTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const needed = useMemo(() => {
     if (!enabled || !index || !debouncedKey) return [] as string[]
@@ -40,7 +44,13 @@ export function useViewportHomes(bbox: BBox | null, index: IndexData | undefined
       loadZip(zip, version, ctl.signal).then(
         () => {
           if (ctls.get(zip) === ctl) ctls.delete(zip)
-          setTick((t) => t + 1)
+          // Chunks usually arrive in a burst; rebuild the combined list once per burst, not once per chunk.
+          if (flushTimer.current === null) {
+            flushTimer.current = setTimeout(() => {
+              flushTimer.current = null
+              setTick((t) => t + 1)
+            }, BATCH_MS)
+          }
         },
         (e: Error) => {
           if (e.name !== 'AbortError') console.error(e)
@@ -55,6 +65,8 @@ export function useViewportHomes(bbox: BBox | null, index: IndexData | undefined
     return () => {
       ctls.forEach((c) => c.abort())
       ctls.clear()
+      if (flushTimer.current !== null) clearTimeout(flushTimer.current)
+      flushTimer.current = null
     }
   }, [])
 

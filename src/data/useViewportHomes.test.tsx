@@ -55,7 +55,7 @@ describe('useViewportHomes', () => {
     await act(async () => { vi.advanceTimersByTime(150) })
     expect(pending).toHaveLength(1)
     await act(async () => { pending[0].resolve(); await Promise.resolve() })
-    await act(async () => { await Promise.resolve() })
+    await act(async () => { await Promise.resolve(); vi.advanceTimersByTime(100) }) // updates are batched for 80 ms
     expect(result.current.homes.map((h) => h.key)).toEqual(['98001-1'])
 
     rerender({ b: view(-122.09) }) // pan to 98002, not yet loaded

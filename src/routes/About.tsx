@@ -29,7 +29,7 @@ export function About() {
         <ul>
           <li>{ix ? ix.nHomes.toLocaleString() : '21,613'} home sales in King County, {ix ? `${ix.dataRange[0]} to ${ix.dataRange[1]}` : '2014–2015'}. All prices are what the homes <em>sold for then</em>. These are not current listings and nothing here is for sale.</li>
           <li>The data (the public “House Sales in King County, USA” set on Kaggle) has no street addresses, photos, schools, commute or crime information, so a home appears only as a point on the map.</li>
-          <li>“Today’s dollars” uses the S&amp;P Case-Shiller Seattle index (via FRED) or the FHFA ZIP-level index. These are market averages and do not value any individual home.</li>
+          <li>“Today’s dollars” uses the S&amp;P Case-Shiller Seattle index (via FRED) or the FHFA ZIP-level index. These are market averages and do not value any individual home. The two indexes can differ a lot for the same home: the FHFA ZIP index is built from mortgages bought or guaranteed by Fannie Mae and Freddie Mac, so expensive homes are under-represented.</li>
         </ul>
       </section>
 

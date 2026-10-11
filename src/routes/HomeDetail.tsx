@@ -1,3 +1,4 @@
+import { useFocusOnMount } from '../lib/useFocusOnMount'
 import { useOutletContext, useParams } from 'react-router'
 import { HomeCard } from '../components/HomeCard'
 import { SearchLink } from '../components/SearchLink'
@@ -16,6 +17,7 @@ export function HomeDetail() {
   const similar = useSimilar(home.data, index)
   const hovered = useHovered()
   const h = home.data
+  const heading = useFocusOnMount<HTMLHeadingElement>(h?.key)
   const band = index?.model.error_overall
   const pi = index?.priceIndex
 
@@ -26,7 +28,7 @@ export function HomeDetail() {
       {home.status === 'ready' && !h && <p>We couldn’t find that sale. It may be from an older version of the link.</p>}
       {h && band && (
         <>
-          <h1>{money(h.price)}</h1>
+          <h1 ref={heading} tabIndex={-1}>{money(h.price)}</h1>
           <p style={{ margin: 0 }}>
             {(() => {
               const d = describeDev(h.dev, band)

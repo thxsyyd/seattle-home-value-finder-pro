@@ -6,6 +6,8 @@ import './styles/global.css'
 import './styles/layout.css'
 import { router } from './router'
 
+if (import.meta.env.DEV && location.search.includes('a11y=1')) void import('./dev/axe')
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <RouterProvider router={router} />

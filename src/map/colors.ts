@@ -2,8 +2,9 @@ import type { ExpressionSpecification } from 'maplibre-gl'
 import type { MetricKey } from '../lib/filters'
 import { priceShort, signedPct } from '../lib/format'
 
-// Diverging: ColorBrewer RdBu (7 classes), blue = sold below the model estimate. Sequential: YlGnBu, last 7 of 9.
-export const DEV_COLORS = ['#2166ac', '#67a9cf', '#d1e5f0', '#e4e4e4', '#fddbc7', '#ef8a62', '#b2182b']
+// Diverging: ColorBrewer RdBu (7 classes) with the three middle classes adjusted so neighbours stay at least 17 Delta E
+// apart under protan/deutan/tritan simulation (scripts/cvd_check.py); blue = sold below the model estimate. Sequential: YlGnBu, last 7 of 9.
+export const DEV_COLORS = ['#2166ac', '#67a9cf', '#b0d0e6', '#efefef', '#f9cdb1', '#ef8a62', '#b2182b']
 export const SEQ_COLORS = ['#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#253494', '#081d58']
 export const NO_DATA = '#cfd3d8'
 

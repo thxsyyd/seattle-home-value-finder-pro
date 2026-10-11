@@ -263,7 +263,7 @@ export default function MapView({ index, filters, homes, selected, priceOf, onSe
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      <div ref={box} role="region" aria-label="Map of King County home sales" style={{ position: 'absolute', inset: 0 }} />
+      <div ref={box} role="region" aria-label="Map of King County home sales. The results list is the keyboard-accessible alternative to the markers." style={{ position: 'absolute', inset: 0 }} />
       {failed && (
         <p role="alert" style={{ position: 'absolute', inset: 0, margin: 0, padding: 'var(--s-5)', background: 'var(--bg)' }}>
           The map could not start (it needs WebGL). The list and filters still work.

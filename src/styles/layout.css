@@ -107,3 +107,4 @@
 
 .topnav { display: flex; gap: var(--s-4); }
 .topnav a { min-height: 32px; display: inline-flex; align-items: center; }
+.chart-h { font-size: 1.125rem; margin: var(--s-4) 0 var(--s-1); }

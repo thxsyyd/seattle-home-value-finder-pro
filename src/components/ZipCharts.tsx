@@ -25,7 +25,7 @@ export default function ZipCharts({ series }: { series: Series[] }) {
 
   return (
     <>
-      <h3>Sale prices</h3>
+      <h2 className="chart-h">Sale prices</h2>
       <div className="chart-box" role="img" aria-label="Bar chart: share of sales in each price band, by ZIP code">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
@@ -38,7 +38,7 @@ export default function ZipCharts({ series }: { series: Series[] }) {
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <h3>Size and price</h3>
+      <h2 className="chart-h">Size and price</h2>
       <div className="chart-box" role="img" aria-label="Scatter chart: living area against sale price">
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
