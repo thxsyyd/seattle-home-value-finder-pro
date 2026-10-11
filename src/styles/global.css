@@ -1,0 +1,47 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font: var(--fs-body) / 1.45 var(--font);
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  background: var(--bg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px #fff;
+}
+
+.skip-link {
+  position: absolute;
+  left: var(--s-2);
+  top: -48px;
+  padding: var(--s-2) var(--s-3);
+  background: var(--surface);
+  border-radius: var(--r-sm);
+  z-index: 100;
+}
+.skip-link:focus {
+  top: var(--s-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

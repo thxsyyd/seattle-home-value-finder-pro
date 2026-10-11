@@ -1,0 +1,46 @@
+:root {
+  /* neutrals */
+  --text: #1b2430;
+  --muted: #5b6675;
+  --border: #d9dee5;
+  --surface: #ffffff;
+  --bg: #f5f6f8;
+  --accent: #0b5cad;
+  --focus: #0b5cad;
+
+  /* diverging: sale price vs. model estimate (ColorBrewer RdBu, 7 classes) */
+  --dev-1: #2166ac;
+  --dev-2: #67a9cf;
+  --dev-3: #d1e5f0;
+  --dev-4: #e4e4e4;
+  --dev-5: #fddbc7;
+  --dev-6: #ef8a62;
+  --dev-7: #b2182b;
+
+  /* sequential: price, $/sqft (ColorBrewer YlGnBu, last 7 of 9) */
+  --seq-1: #c7e9b4;
+  --seq-2: #7fcdbb;
+  --seq-3: #41b6c4;
+  --seq-4: #1d91c0;
+  --seq-5: #225ea8;
+  --seq-6: #253494;
+  --seq-7: #081d58;
+  --no-data: #cfd3d8;
+
+  /* spacing (4px base), radii */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-pill: 999px;
+
+  /* type */
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --fs-body: 1rem;
+  --fs-small: 0.875rem;
+  --fs-tiny: 0.75rem;
+}
