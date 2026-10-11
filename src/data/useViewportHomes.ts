@@ -10,16 +10,16 @@ const keyOf = (b: BBox) => b.map((n) => n.toFixed(3)).join(',')
  * Sales for every zip whose bounding box meets the (debounced) viewport. Chunks that the viewport has
  * left are aborted if still in flight; chunks already loaded stay cached and are never refetched.
  */
-export function useViewportHomes(bbox: BBox | null, index: IndexData | undefined, debounceMs = 220) {
+export function useViewportHomes(bbox: BBox | null, index: IndexData | undefined, debounceMs = 220, enabled = true) {
   const debouncedKey = useDebouncedValue(bbox ? keyOf(bbox) : null, debounceMs)
   const [tick, setTick] = useState(0)
   const controllers = useRef(new Map<string, AbortController>())
 
   const needed = useMemo(() => {
-    if (!index || !debouncedKey) return [] as string[]
+    if (!enabled || !index || !debouncedKey) return [] as string[]
     const b = debouncedKey.split(',').map(Number) as BBox
     return index.zips.filter((z) => bboxIntersects(z.bbox, b)).map((z) => z.zip)
-  }, [index, debouncedKey])
+  }, [index, debouncedKey, enabled])
   const neededKey = needed.join(',')
   const version = index?.version
 

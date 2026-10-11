@@ -1,0 +1,208 @@
+import { Map as MlMap, NavigationControl, Popup, setWorkerUrl } from 'maplibre-gl'
+// MapLibre derives its worker URL from import.meta.url at run time, which bundlers can't see, so the
+// production build would not ship the worker. Import it as an asset and point MapLibre at it.
+import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
+import 'maplibre-gl/dist/maplibre-gl.css'
+import { useEffect, useRef, useState } from 'react'
+import { fetchJson } from '../data/client'
+import type { BBox, IndexData } from '../data/types'
+import type { Filters } from '../lib/filters'
+import { money } from '../lib/format'
+import { Legend } from './Legend'
+import { DEFAULT_VIEW, webglSupported } from './view'
+import { addRegionLayers, IDS, setLayerMode, setMetric, setSourceData } from './layers'
+
+setWorkerUrl(workerUrl)
+
+const STYLE_URL = import.meta.env.VITE_STYLE_URL ?? 'https://tiles.openfreemap.org/styles/positron'
+const DATA = `${import.meta.env.BASE_URL}data/v1/`
+
+interface FeatureCollection {
+  type: 'FeatureCollection'
+  features: { type: 'Feature'; properties: { z?: string } | null; geometry: unknown }[]
+}
+
+export interface ViewState {
+  bbox: BBox
+  lat: number
+  lon: number
+  zoom: number
+}
+
+interface Props {
+  index: IndexData | undefined
+  filters: Filters
+  /** `persist` is false for the initial load, so merely opening the page doesn't rewrite the URL */
+  onViewChange: (v: ViewState, persist: boolean) => void
+}
+
+function readView(map: MlMap): ViewState {
+  const b = map.getBounds()
+  const c = map.getCenter()
+  return { bbox: [b.getWest(), b.getSouth(), b.getEast(), b.getNorth()], lat: c.lat, lon: c.lng, zoom: map.getZoom() }
+}
+
+/** Show a popup whose content is built with textContent only (no HTML injection from data). */
+function popupNode(title: string, lines: string[]): HTMLElement {
+  const el = document.createElement('div')
+  el.style.cssText = 'font: 14px/1.4 system-ui, sans-serif; color: #1b2430;'
+  const h = document.createElement('strong')
+  h.textContent = title
+  el.append(h)
+  for (const l of lines) {
+    const p = document.createElement('div')
+    p.textContent = l
+    el.append(p)
+  }
+  return el
+}
+
+export default function MapView({ index, filters, onViewChange }: Props) {
+  const box = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<MlMap | null>(null)
+  const [ready, setReady] = useState(false)
+  const [failed, setFailed] = useState(() => !webglSupported())
+  const [zoom, setZoom] = useState(filters.z ?? DEFAULT_VIEW.zoom)
+  const initial = useRef(filters)
+  const onView = useRef(onViewChange)
+  useEffect(() => {
+    onView.current = onViewChange
+  })
+
+  // create the map once
+  useEffect(() => {
+    if (!box.current) return
+    if (failed) return
+    let map: MlMap
+    try {
+      const f = initial.current
+      map = new MlMap({
+        container: box.current,
+        style: STYLE_URL,
+        center: f.ll ? [f.ll[1], f.ll[0]] : [DEFAULT_VIEW.lon, DEFAULT_VIEW.lat],
+        zoom: f.z ?? DEFAULT_VIEW.zoom,
+        minZoom: 8,
+        maxZoom: 17,
+        hash: false,
+      })
+    } catch {
+      queueMicrotask(() => setFailed(true))
+      return
+    }
+    mapRef.current = map
+    if (import.meta.env.DEV) (window as unknown as { __map?: MlMap }).__map = map // handle for browser-side debugging
+    map.addControl(new NavigationControl({ showCompass: false }), 'top-right')
+    map.on('error', (e) => {
+      if (!map.isStyleLoaded() && !map.getStyle()) setFailed(true)
+      console.warn('map error', e.error?.message)
+    })
+    map.on('load', () => {
+      addRegionLayers(map, initial.current.metric)
+      setLayerMode(map, initial.current.layer)
+      setReady(true)
+      onView.current(readView(map), false)
+    })
+    map.on('moveend', () => {
+      setZoom(map.getZoom())
+      onView.current(readView(map), true)
+    })
+
+    const clickable = [IDS.hex7Fill, IDS.hex8Fill, IDS.zipFill]
+    map.on('mousemove', (e) => {
+      map.getCanvas().style.cursor = map.queryRenderedFeatures(e.point, { layers: clickable }).length ? 'pointer' : ''
+    })
+    map.on('click', (e) => {
+      const f = map.queryRenderedFeatures(e.point, { layers: clickable })[0]
+      if (!f) return
+      const p = f.properties as Record<string, number | string>
+      const isZip = f.layer.id === IDS.zipFill
+      const lines = isZip
+        ? [`${Number(p.n).toLocaleString()} sales`, `Median ${money(Number(p.m))}`, `Median $${p.p} / sq ft`]
+        : [`${p.n} sales in this hexagon`, p.g ? 'Too few sales for a reliable estimate' : `$${p.p} / sq ft (smoothed)`, `Raw median $${p.r} / sq ft`]
+      new Popup({ closeButton: true, maxWidth: '240px' })
+        .setLngLat(e.lngLat)
+        .setDOMContent(popupNode(isZip ? `ZIP ${p.z}` : 'Area summary', lines))
+        .addTo(map)
+    })
+    return () => {
+      map.remove()
+      mapRef.current = null
+      setReady(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- create once; `failed` only gates the initial attempt
+  }, [])
+
+  // data layers
+  useEffect(() => {
+    const map = mapRef.current
+    if (!ready || !map || !index) return
+    const ctl = new AbortController()
+    fetchJson(`${DATA}hex7.geojson?v=${index.version}`, { signal: ctl.signal }).then((d) => setSourceData(map, IDS.hex7, d), () => {})
+    return () => ctl.abort()
+  }, [ready, index])
+
+  const needHex8 = zoom >= 10
+  useEffect(() => {
+    const map = mapRef.current
+    if (!ready || !map || !index || !needHex8) return
+    const ctl = new AbortController()
+    fetchJson(`${DATA}hex8.geojson?v=${index.version}`, { signal: ctl.signal }).then((d) => setSourceData(map, IDS.hex8, d), () => {})
+    return () => ctl.abort()
+  }, [ready, index, needHex8])
+
+  const showZips = filters.layer === 'zip'
+  useEffect(() => {
+    const map = mapRef.current
+    if (!ready || !map || !index || !showZips) return
+    const ctl = new AbortController()
+    fetchJson<FeatureCollection>(`${DATA}zips.geojson?v=${index.version}`, { signal: ctl.signal }).then((gj) => {
+      const rows = new Map(index.zips.map((z) => [z.zip, z]))
+      // join per-zip stats onto the polygons so they use the same property keys as the hexagons
+      const joined = {
+        ...gj,
+        features: gj.features.map((f) => {
+          const z = rows.get(f.properties?.z ?? '')
+          return { ...f, properties: { z: f.properties?.z, n: z?.n ?? 0, p: z?.medPpsf ?? 0, m: z?.medPrice ?? 0, d: z?.medDev ?? 0, g: 0 } }
+        }),
+      }
+      setSourceData(map, IDS.zips, joined)
+    }, () => {})
+    return () => ctl.abort()
+  }, [ready, index, showZips])
+
+  // filters -> map
+  useEffect(() => {
+    const map = mapRef.current
+    if (ready && map) setMetric(map, filters.metric)
+  }, [ready, filters.metric])
+  useEffect(() => {
+    const map = mapRef.current
+    if (ready && map) setLayerMode(map, filters.layer)
+  }, [ready, filters.layer])
+
+  // URL -> map: only move when the URL differs from where the map already is (avoids write/read loops)
+  const { ll, z } = filters
+  useEffect(() => {
+    const map = mapRef.current
+    if (!ready || !map || !ll) return
+    const c = map.getCenter()
+    const zz = z ?? map.getZoom()
+    if (Math.abs(c.lat - ll[0]) > 5e-4 || Math.abs(c.lng - ll[1]) > 5e-4 || Math.abs(map.getZoom() - zz) > 0.02) {
+      map.flyTo({ center: [ll[1], ll[0]], zoom: zz, duration: 700, essential: false })
+    }
+  }, [ready, ll, z])
+
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+      <div ref={box} role="region" aria-label="Map of King County home sales" style={{ position: 'absolute', inset: 0 }} />
+      {failed && (
+        <p role="alert" style={{ position: 'absolute', inset: 0, margin: 0, padding: 'var(--s-5)', background: 'var(--bg)' }}>
+          The map could not start (it needs WebGL). The list and filters still work.
+        </p>
+      )}
+      <div style={{ position: 'absolute', left: 'var(--s-3)', bottom: 'var(--s-5)' }}>
+        <Legend metric={filters.metric} showNoData={!showZips} />
+      </div>
+    </div>
+  )
+}
