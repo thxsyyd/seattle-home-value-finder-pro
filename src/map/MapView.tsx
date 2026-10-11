@@ -1,20 +1,24 @@
-import { Map as MlMap, NavigationControl, Popup, setWorkerUrl } from 'maplibre-gl'
+import { Map as MlMap, NavigationControl, Popup, setWorkerUrl, type GeoJSONSource } from 'maplibre-gl'
 // MapLibre derives its worker URL from import.meta.url at run time, which bundlers can't see, so the
 // production build would not ship the worker. Import it as an asset and point MapLibre at it.
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { useEffect, useRef, useState } from 'react'
 import { fetchJson } from '../data/client'
-import type { BBox, IndexData } from '../data/types'
+import type { BBox, Home, IndexData } from '../data/types'
 import type { Filters } from '../lib/filters'
 import { money } from '../lib/format'
+import { setHovered, useHover } from '../state/hoverStore'
 import { Legend } from './Legend'
+import { addHomeLayers, HL, setBubblesVisible, setHomes, setSelected } from './homesLayer'
 import { DEFAULT_VIEW, webglSupported } from './view'
 import { addRegionLayers, IDS, setLayerMode, setMetric, setSourceData } from './layers'
 
 setWorkerUrl(workerUrl)
 
 const STYLE_URL = import.meta.env.VITE_STYLE_URL ?? 'https://tiles.openfreemap.org/styles/positron'
+/** Price bubbles collide and clutter beyond this many homes in view; dots and clusters take over. */
+const MAX_BUBBLES = 300
 const DATA = `${import.meta.env.BASE_URL}data/v1/`
 
 interface FeatureCollection {
@@ -32,6 +36,10 @@ export interface ViewState {
 interface Props {
   index: IndexData | undefined
   filters: Filters
+  /** filtered sales for every zip near the viewport (drawn as dots / clusters / price bubbles) */
+  homes: Home[]
+  selected: Home | null
+  onSelectHome: (key: string) => void
   /** `persist` is false for the initial load, so merely opening the page doesn't rewrite the URL */
   onViewChange: (v: ViewState, persist: boolean) => void
 }
@@ -57,7 +65,7 @@ function popupNode(title: string, lines: string[]): HTMLElement {
   return el
 }
 
-export default function MapView({ index, filters, onViewChange }: Props) {
+export default function MapView({ index, filters, homes, selected, onSelectHome, onViewChange }: Props) {
   const box = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MlMap | null>(null)
   const [ready, setReady] = useState(false)
@@ -65,9 +73,14 @@ export default function MapView({ index, filters, onViewChange }: Props) {
   const [zoom, setZoom] = useState(filters.z ?? DEFAULT_VIEW.zoom)
   const initial = useRef(filters)
   const onView = useRef(onViewChange)
+  const onSelect = useRef(onSelectHome)
   useEffect(() => {
     onView.current = onViewChange
+    onSelect.current = onSelectHome
   })
+  const hover = useHover()
+  const prevHover = useRef<string | null>(null)
+  const band = index?.model.error_overall
 
   // create the map once
   useEffect(() => {
@@ -90,7 +103,7 @@ export default function MapView({ index, filters, onViewChange }: Props) {
       return
     }
     mapRef.current = map
-    if (import.meta.env.DEV) (window as unknown as { __map?: MlMap }).__map = map // handle for browser-side debugging
+    if (import.meta.env.DEV || new URLSearchParams(location.search).get('debug') === '1') (window as unknown as { __map?: MlMap }).__map = map // handle for scripted checks
     map.addControl(new NavigationControl({ showCompass: false }), 'top-right')
     map.on('error', (e) => {
       if (!map.isStyleLoaded() && !map.getStyle()) setFailed(true)
@@ -98,6 +111,7 @@ export default function MapView({ index, filters, onViewChange }: Props) {
     })
     map.on('load', () => {
       addRegionLayers(map, initial.current.metric)
+      addHomeLayers(map)
       setLayerMode(map, initial.current.layer)
       setReady(true)
       onView.current(readView(map), false)
@@ -107,12 +121,31 @@ export default function MapView({ index, filters, onViewChange }: Props) {
       onView.current(readView(map), true)
     })
 
-    const clickable = [IDS.hex7Fill, IDS.hex8Fill, IDS.zipFill]
+    const areas = [IDS.hex7Fill, IDS.hex8Fill, IDS.zipFill]
+    const markers = [HL.circles, HL.bubbles]
+    const present = (ids: string[]) => ids.filter((id) => map.getLayer(id))
     map.on('mousemove', (e) => {
-      map.getCanvas().style.cursor = map.queryRenderedFeatures(e.point, { layers: clickable }).length ? 'pointer' : ''
+      const m = map.queryRenderedFeatures(e.point, { layers: present(markers) })[0]
+      const cl = map.queryRenderedFeatures(e.point, { layers: present([HL.clusters]) })[0]
+      setHovered(m ? String(m.properties?.key) : null, 'map')
+      map.getCanvas().style.cursor = m || cl || map.queryRenderedFeatures(e.point, { layers: present(areas) }).length ? 'pointer' : ''
     })
+    map.on('mouseout', () => setHovered(null))
     map.on('click', (e) => {
-      const f = map.queryRenderedFeatures(e.point, { layers: clickable })[0]
+      const m = map.queryRenderedFeatures(e.point, { layers: present(markers) })[0]
+      if (m) {
+        onSelect.current(String(m.properties?.key))
+        return
+      }
+      const cl = map.queryRenderedFeatures(e.point, { layers: present([HL.clusters]) })[0]
+      if (cl) {
+        const src = map.getSource(HL.src) as GeoJSONSource
+        src.getClusterExpansionZoom(Number(cl.properties?.cluster_id)).then((z) => {
+          map.easeTo({ center: (cl.geometry as { coordinates: [number, number] }).coordinates, zoom: Math.min(z + 0.5, 16) })
+        })
+        return
+      }
+      const f = map.queryRenderedFeatures(e.point, { layers: present(areas) })[0]
       if (!f) return
       const p = f.properties as Record<string, number | string>
       const isZip = f.layer.id === IDS.zipFill
@@ -170,6 +203,40 @@ export default function MapView({ index, filters, onViewChange }: Props) {
     return () => ctl.abort()
   }, [ready, index, showZips])
 
+  // homes -> map (dots, clusters, bubbles); bubbles are only worth drawing when the view is not crowded
+  useEffect(() => {
+    const map = mapRef.current
+    if (!ready || !map || !band) return
+    setHomes(map, homes, band)
+  }, [ready, homes, band])
+  useEffect(() => {
+    const map = mapRef.current
+    if (!ready || !map) return
+    const b = map.getBounds()
+    const inView = homes.reduce((n, h) => n + (b.contains([h.lon, h.lat]) ? 1 : 0), 0)
+    setBubblesVisible(map, inView <= MAX_BUBBLES || zoom >= 15.5)
+  }, [ready, homes, zoom])
+
+  // selected home: ring + bubble, and bring it into view if it is outside the current viewport
+  useEffect(() => {
+    const map = mapRef.current
+    if (!ready || !map || !band) return
+    setSelected(map, selected, band)
+    if (selected && !map.getBounds().contains([selected.lon, selected.lat])) {
+      map.easeTo({ center: [selected.lon, selected.lat], zoom: Math.max(map.getZoom(), 14), duration: 600 })
+    }
+  }, [ready, selected, band])
+
+  // hover from the list (or the map) -> feature-state highlight
+  useEffect(() => {
+    const map = mapRef.current
+    if (!ready || !map) return
+    const prev = prevHover.current
+    if (prev && map.getSource(HL.src)) map.setFeatureState({ source: HL.src, id: prev }, { hover: false })
+    if (hover.key && map.getSource(HL.src)) map.setFeatureState({ source: HL.src, id: hover.key }, { hover: true })
+    prevHover.current = hover.key
+  }, [ready, hover.key])
+
   // filters -> map
   useEffect(() => {
     const map = mapRef.current
@@ -200,7 +267,7 @@ export default function MapView({ index, filters, onViewChange }: Props) {
           The map could not start (it needs WebGL). The list and filters still work.
         </p>
       )}
-      <div style={{ position: 'absolute', left: 'var(--s-3)', bottom: 'var(--s-5)' }}>
+      <div className="legend-slot">
         <Legend metric={filters.metric} showNoData={!showZips} />
       </div>
     </div>

@@ -1,6 +1,7 @@
 import type { BBox, Home } from '../data/types'
 import type { Filters, SortKey } from './filters'
 import { pointInBbox } from './geo'
+import { UNUSUAL_DEV } from './model'
 
 export type PriceOf = (h: Home) => number
 
@@ -28,7 +29,8 @@ export const inBbox = (homes: Home[], b: BBox) => homes.filter((h) => pointInBbo
 
 export function sortHomes(homes: Home[], sort: SortKey, priceOf: PriceOf = asSold): Home[] {
   const key: Record<SortKey, (h: Home) => number> = {
-    dev: (h) => h.dev,
+    // most below the model first, but very large gaps (often unusual sales) sort after the rest
+    dev: (h) => (h.dev <= UNUSUAL_DEV ? 1 - h.dev : h.dev),
     price: (h) => priceOf(h),
     ppsf: (h) => priceOf(h) / h.sqft,
     newest: (h) => -Date.parse(h.date),

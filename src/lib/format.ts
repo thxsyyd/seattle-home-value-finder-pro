@@ -5,7 +5,7 @@ export function priceShort(n: number): string {
   return `$${Math.round(n)}`
 }
 
-export const money = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`
+export const money = (n: number) => `${n < 0 ? '−' : ''}$${Math.abs(Math.round(n)).toLocaleString('en-US')}`
 
 /** Signed percent from a fraction: 0.123 -> "+12%", -0.5 -> "−50%". */
 export function signedPct(f: number, digits = 0): string {

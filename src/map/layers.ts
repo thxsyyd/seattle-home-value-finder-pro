@@ -2,8 +2,8 @@ import type { GeoJSONSource, Map as MlMap } from 'maplibre-gl'
 import type { MetricKey, LayerKey } from '../lib/filters'
 import { fillColorExpression, NO_DATA } from './colors'
 
-// Region fills go in just below the first road layer's siblings ("building"), so roads, rails and labels stay on top.
-const BEFORE = 'building'
+// Region fills go in above buildings (which are opaque from z12) but below every road layer, so roads and labels stay on top.
+const BEFORE = 'tunnel_motorway_casing'
 
 export const IDS = {
   hex7: 'hex7', hex8: 'hex8', zips: 'zips',
@@ -18,8 +18,8 @@ export function addRegionLayers(map: MlMap, metric: MetricKey): void {
   const fill = fillColorExpression(metric)
 
   map.addLayer({ id: IDS.hex7Fill, type: 'fill', source: IDS.hex7, paint: { 'fill-color': fill, 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 10.5, 0.78, 12.5, 0] } }, BEFORE)
-  map.addLayer({ id: IDS.hex8Fill, type: 'fill', source: IDS.hex8, paint: { 'fill-color': fill, 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 10.5, 0, 12.5, 0.7] } }, BEFORE)
-  map.addLayer({ id: IDS.zipFill, type: 'fill', source: IDS.zips, layout: { visibility: 'none' }, paint: { 'fill-color': fill, 'fill-opacity': 0.72 } }, BEFORE)
+  map.addLayer({ id: IDS.hex8Fill, type: 'fill', source: IDS.hex8, paint: { 'fill-color': fill, 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 10.5, 0, 12.5, 0.7, 14.5, 0.3] } }, BEFORE)
+  map.addLayer({ id: IDS.zipFill, type: 'fill', source: IDS.zips, layout: { visibility: 'none' }, paint: { 'fill-color': fill, 'fill-opacity': ['interpolate', ['linear'], ['zoom'], 8, 0.75, 14, 0.35] } }, BEFORE)
   // Water drawn again above the fills so colour never spills over lakes and Puget Sound.
   map.addLayer({
     id: IDS.waterMask, type: 'fill', source: 'openmaptiles', 'source-layer': 'water',

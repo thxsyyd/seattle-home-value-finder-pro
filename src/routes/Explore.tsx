@@ -1,23 +1,62 @@
-import { lazy, Suspense, useCallback, useState } from 'react'
-import { Link, Outlet } from 'react-router'
+import { lazy, Suspense, useCallback, useMemo, useState } from 'react'
+import { Link, Outlet, useLocation, useMatch, useNavigate } from 'react-router'
+import { DisclaimerBanner } from '../components/DisclaimerBanner'
+import { FilterBar } from '../components/FilterBar'
+import type { Home, IndexData } from '../data/types'
+import { useHome } from '../data/useHome'
 import { useIndex } from '../data/useIndex'
-import type { IndexData } from '../data/types'
+import { useViewportHomes } from '../data/useViewportHomes'
+import { viewBbox } from '../lib/geo'
+import { filterHomes, inBbox, sortHomes } from '../lib/query'
 import { MapControls } from '../map/MapControls'
 import type { ViewState } from '../map/MapView'
+import { DEFAULT_VIEW } from '../map/view'
 import { useFilters } from '../state/useFilters'
 
 const MapView = lazy(() => import('../map/MapView'))
 
+/** Below this zoom a viewport spans too many ZIPs to list individual sales. */
+export const MIN_LIST_ZOOM = 10.5
+
 export interface ExploreContext {
   index: IndexData | undefined
   view: ViewState | null
+  /** sales that pass the filters, for the ZIPs near the viewport */
+  filtered: Home[]
+  /** filtered sales in the viewport (or all loaded ones when "follow map" is off), sorted */
+  rows: Home[]
+  loading: boolean
+  zoomedIn: boolean
 }
 
 // Layout route: the map lives here so it stays mounted while the side panel changes.
 export function Explore() {
   const [filters, setFilters] = useFilters()
   const index = useIndex()
+  const navigate = useNavigate()
+  const { pathname, search } = useLocation()
   const [view, setView] = useState<ViewState | null>(null)
+
+  const zoom = view?.zoom ?? filters.z ?? DEFAULT_VIEW.zoom
+  const bbox = useMemo(
+    () => view?.bbox ?? viewBbox(filters.ll?.[0] ?? DEFAULT_VIEW.lat, filters.ll?.[1] ?? DEFAULT_VIEW.lon, zoom),
+    [view, filters.ll, zoom],
+  )
+  const zoomedIn = zoom >= MIN_LIST_ZOOM
+  const { homes, loading } = useViewportHomes(bbox, index.data, 220, zoomedIn)
+
+  const f = filters
+  const filterKey = JSON.stringify([f.minp, f.maxp, f.beds, f.baths, f.sfMin, f.sfMax, f.ybMin, f.ybMax, f.gr, f.wf, f.dv])
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- `f` is only read through filterKey
+  const filtered = useMemo(() => filterHomes(homes, f), [homes, filterKey])
+  const rows = useMemo(
+    () => sortHomes(f.follow ? inBbox(filtered, bbox) : filtered, f.sort),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [filtered, bbox, f.sort, f.follow],
+  )
+
+  const homeMatch = useMatch('/home/:id')
+  const selected = useHome(homeMatch?.params.id, index.data).data ?? null
 
   const onViewChange = useCallback(
     (v: ViewState, persist: boolean) => {
@@ -26,27 +65,36 @@ export function Explore() {
     },
     [setFilters],
   )
-  const ctx: ExploreContext = { index: index.data, view }
+  const onSelectHome = useCallback((key: string) => navigate({ pathname: `/home/${key}`, search }), [navigate, search])
+
+  const detail = pathname !== '/'
+  const ctx: ExploreContext = { index: index.data, view, filtered, rows, loading, zoomedIn }
 
   return (
-    <div style={{ display: 'grid', gridTemplateRows: 'auto 1fr', height: '100%' }}>
+    <div className="explore" data-view={filters.view} data-detail={detail}>
       <a className="skip-link" href="#panel">Skip to results</a>
-      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 'var(--s-3) var(--s-4)', background: 'var(--surface)', borderBottom: '1px solid var(--border)' }}>
-        <Link to="/" style={{ fontWeight: 700, color: 'var(--text)', textDecoration: 'none' }}>Seattle Home Value Finder</Link>
+      <header className="topbar">
+        <Link to={{ pathname: '/', search }} className="brand">Seattle Home Value Finder</Link>
         <Link to="/about">About</Link>
       </header>
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(320px, 420px) 1fr', minHeight: 0 }}>
-        <main id="panel" style={{ overflow: 'auto', padding: 'var(--s-4)', background: 'var(--surface)' }}>
+      <DisclaimerBanner range={index.data?.dataRange} />
+      <div className="split">
+        <section id="panel" className="panel" aria-label="Results">
+          {!detail && <FilterBar filters={filters} index={index.data} onChange={(patch) => setFilters(patch)} />}
           <Outlet context={ctx} />
-        </main>
-        <div style={{ position: 'relative', background: 'var(--bg)' }}>
+        </section>
+        <div className="mapwrap">
           <Suspense fallback={<p style={{ padding: 'var(--s-5)' }}>Loading map…</p>}>
-            <MapView index={index.data} filters={filters} onViewChange={onViewChange} />
+            <MapView index={index.data} filters={filters} homes={filtered} selected={selected} onSelectHome={onSelectHome} onViewChange={onViewChange} />
           </Suspense>
-          <div style={{ position: 'absolute', top: 'var(--s-3)', left: 'var(--s-3)', zIndex: 2 }}>
+          <div className="mapctl">
             <MapControls layer={filters.layer} metric={filters.metric} onLayer={(layer) => setFilters({ layer })} onMetric={(metric) => setFilters({ metric })} />
           </div>
         </div>
+      </div>
+      <div className="viewtoggle" role="group" aria-label="Show">
+        <button type="button" aria-pressed={filters.view === 'list'} onClick={() => setFilters({ view: 'list' })}>List</button>
+        <button type="button" aria-pressed={filters.view === 'map'} onClick={() => setFilters({ view: 'map' })}>Map</button>
       </div>
     </div>
   )

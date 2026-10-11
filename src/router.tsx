@@ -1,5 +1,7 @@
 import { createBrowserRouter } from 'react-router'
 import { Explore } from './routes/Explore'
+import { HomeDetail } from './routes/HomeDetail'
+import { ZipDetail } from './routes/ZipDetail'
 import { ListPanel } from './routes/ListPanel'
 import { Placeholder } from './routes/Placeholder'
 
@@ -10,8 +12,8 @@ export const router = createBrowserRouter(
       element: <Explore />,
       children: [
         { index: true, element: <ListPanel /> },
-        { path: 'zip/:zip', element: <Placeholder title="Zip code detail" /> },
-        { path: 'home/:id', element: <Placeholder title="Home detail" /> },
+        { path: 'zip/:zip', element: <ZipDetail /> },
+        { path: 'home/:id', element: <HomeDetail /> },
       ],
     },
     { path: '/compare/:a/:b', element: <Placeholder title="Compare" /> },
