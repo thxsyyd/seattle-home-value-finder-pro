@@ -4,6 +4,8 @@ Explore every home that sold in King County, Washington between May 2014 and May
 less (or more) than a price model expected. An interactive map and list with shareable links, built as the polished
 follow-up to my INFO 5002 (Introduction to Python) final project at Northeastern University.
 
+**Live site: https://seattle-home-value-finder.pages.dev**
+
 By Daisy Tang. The graded course version (linear regression, R² 0.647, single-file Leaflet page) is kept unchanged and is
 still reachable from this site's About page.
 
@@ -75,6 +77,8 @@ Cloudflare Pages by direct upload, so nothing needs access to the repository:
 
 ```bash
 npx wrangler login          # once
+npx wrangler pages project create seattle-home-value-finder --production-branch main --force   # once; --force keeps it on
+                            # classic Pages (recent Wrangler otherwise redirects static projects created by agents to Workers)
 scripts/deploy.sh           # lint, test, build, size check, upload dist/
 ```
 
