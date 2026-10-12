@@ -1,12 +1,9 @@
-import { useState, type ReactNode } from 'react'
 import type { IndexData } from '../data/types'
 import { useT, type T } from '../i18n'
-import { activeFilterCount, BEST_DEALS, type Filters } from '../lib/filters'
-import { priceShort } from '../lib/format'
+import { effectiveDv, moreFilterCount, type Filters, type ShowKey } from '../lib/filters'
 import { adjSummary, parseAdj } from '../lib/priceIndex'
-import { PriceRange } from './PriceRange'
-
-type ChipId = 'price' | 'basis' | 'beds' | 'baths' | 'size' | 'built' | 'model'
+import { BudgetSlider } from './BudgetSlider'
+import { ZipFinder } from './ZipFinder'
 
 interface Props {
   filters: Filters
@@ -14,16 +11,14 @@ interface Props {
   onChange: (patch: Partial<Filters>) => void
 }
 
-const RESET: Partial<Filters> = {
-  minp: undefined, maxp: undefined, beds: undefined, baths: undefined, sfMin: undefined, sfMax: undefined,
-  ybMin: undefined, ybMax: undefined, gr: undefined, wf: undefined, dv: undefined, adj: 'none',
-}
+/** Everything "More filters" can clear. The budget, bedrooms and the show toggle are not part of it. */
+const CLEAR_MORE: Partial<Filters> = { minp: undefined, baths: undefined, sfMin: undefined, sfMax: undefined, ybMin: undefined, ybMax: undefined, gr: undefined, wf: undefined, adj: 'none' }
 
 function Seg({ label, value, options, onPick }: { label: string; value: number | undefined; options: [number | undefined, string][]; onPick: (v?: number) => void }) {
   return (
     <div role="group" aria-label={label} className="seg">
-      {options.map(([v, t]) => (
-        <button key={t} type="button" aria-pressed={value === v} onClick={() => onPick(v)}>{t}</button>
+      {options.map(([v, text]) => (
+        <button key={text} type="button" aria-pressed={value === v} onClick={() => onPick(v)}>{text}</button>
       ))}
     </div>
   )
@@ -40,72 +35,78 @@ function NumberPair({ label, a, b, onA, onB, t }: { label: string; a?: number; b
   )
 }
 
+/**
+ * The first screen answers one question (what sold below the model's estimate, within a budget?), so only
+ * a ZIP search, the show toggle, budget and bedrooms are always visible. The rest sits under "More filters".
+ */
 export function FilterBar({ filters: f, index, onChange }: Props) {
   const t = useT()
-  const [open, setOpen] = useState<ChipId | null>(null)
-  const count = activeFilterCount(f)
-
-  const chip = (id: ChipId, text: string, active: boolean): ReactNode => (
-    <button type="button" className={`chip${active ? ' on' : ''}`} aria-expanded={open === id} aria-controls={`chip-${id}`} onClick={() => setOpen(open === id ? null : id)}>
-      {text}
-    </button>
-  )
-  const priceText = f.minp || f.maxp ? `${f.minp ? priceShort(f.minp) : '$0'}–${f.maxp ? priceShort(f.maxp) : t('any')}` : t('chip.price')
+  const more = moreFilterCount(f)
+  const adj = parseAdj(f.adj)
+  const shows: [ShowKey, string][] = [['all', t('show.all')], ['under', t('show.under')]]
 
   return (
-    <div className="filterbar">
-      <div className="chips" role="toolbar" aria-label={t('filters.label')}>
-        {chip('price', priceText, f.minp !== undefined || f.maxp !== undefined)}
-        {chip('basis', parseAdj(f.adj).kind === 'none' ? t('chip.asSold') : t('chip.today'), parseAdj(f.adj).kind !== 'none')}
-        {chip('beds', f.beds ? t('chip.bedsN', { n: f.beds }) : t('chip.beds'), f.beds !== undefined)}
-        {chip('baths', f.baths ? t('chip.bathsN', { n: f.baths }) : t('chip.baths'), f.baths !== undefined)}
-        {chip('size', t('chip.size'), f.sfMin !== undefined || f.sfMax !== undefined)}
-        {chip('built', t('chip.built'), f.ybMin !== undefined || f.ybMax !== undefined)}
-        {chip('model', f.dv !== undefined ? t('chip.modelN', { n: Math.round(-f.dv * 100) }) : t('chip.model'), f.dv !== undefined)}
-        <button type="button" className={`chip${f.wf ? ' on' : ''}`} aria-pressed={!!f.wf} onClick={() => onChange({ wf: f.wf ? undefined : true })}>{t('chip.waterfront')}</button>
-        <button type="button" className="chip preset" onClick={() => onChange(BEST_DEALS)}>{t('chip.best')}</button>
-        {count > 0 && <button type="button" className="chip linklike" onClick={() => { onChange(RESET); setOpen(null) }}>{t('chip.clear', { n: count })}</button>}
-      </div>
-      {open && (
-        <div id={`chip-${open}`} className="chip-panel">
-          {open === 'price' && index && parseAdj(f.adj).kind === 'none' && <PriceRange min={f.minp} max={f.maxp} histogram={index.histogram} onChange={(minp, maxp) => onChange({ minp, maxp })} />}
-          {open === 'price' && (!index || parseAdj(f.adj).kind !== 'none') && (
-            <>
-              <NumberPair label={t('price.todayLabel')} a={f.minp} b={f.maxp} onA={(minp) => onChange({ minp })} onB={(maxp) => onChange({ maxp })} t={t} />
-              <p className="hint">{t('price.todayNote')}</p>
-            </>
-          )}
-          {open === 'basis' && (
-            <>
-              <div role="group" aria-label={t('basis.group')} className="seg">
-                {(['none', 'metro', 'zip'] as const).map((v) => (
-                  <button key={v} type="button" aria-pressed={parseAdj(f.adj).kind === v} onClick={() => onChange({ adj: v })}>{t(`basis.${v}`)}</button>
-                ))}
-              </div>
-              <label className="pair" style={{ marginTop: 'var(--s-2)' }}>
-                <span>{t('basis.orMultiply')}</span>
-                <input type="number" step={0.1} min={0.1} aria-label={t('basis.multiplier')} placeholder="2.1" value={parseAdj(f.adj).kind === 'manual' ? parseAdj(f.adj).mult : ''} onChange={(e) => onChange({ adj: e.target.value && Number(e.target.value) > 0 ? `x${Number(e.target.value)}` : 'none' })} />
-              </label>
-              <p className="hint">{t('basis.note', { summary: adjSummary(f.adj, index?.priceIndex, t) })}</p>
-            </>
-          )}
-          {open === 'beds' && <Seg label={t('beds.group')} value={f.beds} options={[[undefined, t('any.cap')], [1, '1+'], [2, '2+'], [3, '3+'], [4, '4+'], [5, '5+']]} onPick={(beds) => onChange({ beds })} />}
-          {open === 'baths' && <Seg label={t('baths.group')} value={f.baths} options={[[undefined, t('any.cap')], [1, '1+'], [1.5, '1.5+'], [2, '2+'], [3, '3+']]} onPick={(baths) => onChange({ baths })} />}
-          {open === 'size' && <NumberPair label={t('size.label')} a={f.sfMin} b={f.sfMax} onA={(sfMin) => onChange({ sfMin })} onB={(sfMax) => onChange({ sfMax })} t={t} />}
-          {open === 'built' && <NumberPair label={t('built.label')} a={f.ybMin} b={f.ybMax} onA={(ybMin) => onChange({ ybMin })} onB={(ybMax) => onChange({ ybMax })} t={t} />}
-          {open === 'model' && (
-            <>
-              <Seg
-                label={t('model.group')}
-                value={f.dv === undefined ? undefined : Math.round(-f.dv * 100)}
-                options={[[undefined, t('any.cap')], [5, '5%'], [10, '10%'], [20, '20%']]}
-                onPick={(v) => onChange({ dv: v === undefined ? undefined : -v / 100 })}
-              />
-              <p className="hint">{t('model.hint')}</p>
-            </>
-          )}
+    <div className="fp" role="group" aria-label={t('filters.label')}>
+      <ZipFinder />
+
+      <div className="fp-field" role="group" aria-label={t('show.label')}>
+        <span className="fp-legend" aria-hidden="true">{t('show.label')}</span>
+        <div className="seg two">
+          {shows.map(([v, text]) => (
+            <button key={v} type="button" aria-pressed={f.show === v && (v === 'all' || effectiveDv(f) !== undefined)} onClick={() => onChange({ show: v, dv: undefined })}>{text}</button>
+          ))}
         </div>
-      )}
+        <details className="explain">
+          <summary>{t('show.explainSummary')}</summary>
+          <p>{t('show.explain')}</p>
+        </details>
+      </div>
+
+      <BudgetSlider value={f.maxp} onChange={(maxp) => onChange({ maxp })} />
+
+      <div className="fp-field">
+        <span className="fp-legend" aria-hidden="true">{t('beds.group')}</span>
+        <Seg label={t('beds.group')} value={f.beds} options={[[undefined, t('any.cap')], [1, '1+'], [2, '2+'], [3, '3+'], [4, '4+']]} onPick={(beds) => onChange({ beds })} />
+      </div>
+
+      <details className="more">
+        <summary>{more > 0 ? t('more.countN', { n: more }) : t('more.label')}</summary>
+        <div className="more-body">
+          <div className="fp-field">
+            <span className="fp-legend" aria-hidden="true">{t('baths.group')}</span>
+            <Seg label={t('baths.group')} value={f.baths} options={[[undefined, t('any.cap')], [1, '1+'], [1.5, '1.5+'], [2, '2+'], [3, '3+']]} onPick={(baths) => onChange({ baths })} />
+          </div>
+          <div className="fp-field">
+            <span className="fp-legend" aria-hidden="true">{t('size.label')}</span>
+            <NumberPair label={t('size.label')} a={f.sfMin} b={f.sfMax} onA={(sfMin) => onChange({ sfMin })} onB={(sfMax) => onChange({ sfMax })} t={t} />
+          </div>
+          <div className="fp-field">
+            <span className="fp-legend" aria-hidden="true">{t('built.label')}</span>
+            <NumberPair label={t('built.label')} a={f.ybMin} b={f.ybMax} onA={(ybMin) => onChange({ ybMin })} onB={(ybMax) => onChange({ ybMax })} t={t} />
+          </div>
+          <label className="check">
+            <input type="checkbox" checked={!!f.wf} onChange={(e) => onChange({ wf: e.target.checked ? true : undefined })} /> {t('chip.waterfront')}
+          </label>
+          <div className="fp-field">
+            <label className="fp-legend" htmlFor="minp">{t('more.minPrice')}</label>
+            <input id="minp" className="num-input" type="number" inputMode="numeric" min={0} step={25000} placeholder={t('field.noMin')} value={f.minp ?? ''} onChange={(e) => onChange({ minp: e.target.value === '' ? undefined : Number(e.target.value) })} />
+          </div>
+          <div className="fp-field">
+            <span className="fp-legend" aria-hidden="true">{t('more.basis')}</span>
+            <div role="group" aria-label={t('basis.group')} className="seg">
+              {(['none', 'metro', 'zip'] as const).map((v) => (
+                <button key={v} type="button" aria-pressed={adj.kind === v} onClick={() => onChange({ adj: v })}>{t(`basis.${v}`)}</button>
+              ))}
+            </div>
+            <label className="pair" style={{ marginTop: 'var(--s-2)' }}>
+              <span>{t('basis.orMultiply')}</span>
+              <input type="number" step={0.1} min={0.1} aria-label={t('basis.multiplier')} placeholder="2.1" value={adj.kind === 'manual' ? adj.mult : ''} onChange={(e) => onChange({ adj: e.target.value && Number(e.target.value) > 0 ? `x${Number(e.target.value)}` : 'none' })} />
+            </label>
+            <p className="hint">{t('basis.note', { summary: adjSummary(f.adj, index?.priceIndex, t) })}</p>
+          </div>
+          {more > 0 && <button type="button" className="linklike" onClick={() => onChange(CLEAR_MORE)}>{t('chip.clear', { n: more })}</button>}
+        </div>
+      </details>
     </div>
   )
 }

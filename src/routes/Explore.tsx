@@ -10,6 +10,7 @@ import { useViewportHomes } from '../data/useViewportHomes'
 import { viewBbox } from '../lib/geo'
 import { makePriceOf } from '../lib/priceIndex'
 import { filterHomes, inBbox, sortHomes, type PriceOf } from '../lib/query'
+import { LayersButton } from '../map/LayersButton'
 import type { ViewState } from '../map/MapView'
 import { DEFAULT_VIEW } from '../map/view'
 import { useFilters } from '../state/useFilters'
@@ -89,6 +90,7 @@ export function Explore() {
           <Suspense fallback={<p style={{ padding: 'var(--s-5)' }}>{t('map.loading')}</p>}>
             <MapView index={index.data} filters={filters} homes={filtered} priceOf={priceOf} selected={selected} onSelectHome={onSelectHome} onViewChange={onViewChange} />
           </Suspense>
+          <LayersButton />
         </section>
       </main>
       <nav className="viewtoggle" aria-label={t('view.toggle')}>

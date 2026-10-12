@@ -2,10 +2,18 @@ export type SortKey = 'dev' | 'price' | 'ppsf' | 'newest' | 'sqft'
 export type LayerKey = 'hex' | 'zip' | 'dots'
 export type MetricKey = 'ppsf' | 'price' | 'dev'
 export type ViewKey = 'map' | 'list'
+/** "under" keeps only sales at least 10% below the model estimate; "all" shows every sale. */
+export type ShowKey = 'under' | 'all'
+
+/** A sale is "possibly undervalued" when it sold at least this far below the model estimate. */
+export const UNDER_DEV = -0.1
+export const DEFAULT_BUDGET = 500_000
 
 export interface Filters {
   minp?: number
+  /** budget ceiling; undefined means no limit (written as maxp=any in the URL) */
   maxp?: number
+  show: ShowKey
   beds?: number
   baths?: number
   sfMin?: number
@@ -28,15 +36,16 @@ export interface Filters {
   follow: boolean
 }
 
-export const DEFAULTS: Filters = { sort: 'dev', layer: 'hex', metric: 'ppsf', adj: 'none', view: 'map', follow: true }
+export const DEFAULTS: Filters = { maxp: DEFAULT_BUDGET, show: 'under', sort: 'dev', layer: 'hex', metric: 'ppsf', adj: 'none', view: 'map', follow: true }
 
 const SORTS: SortKey[] = ['dev', 'price', 'ppsf', 'newest', 'sqft']
 const LAYERS: LayerKey[] = ['hex', 'zip', 'dots']
 const METRICS: MetricKey[] = ['ppsf', 'price', 'dev']
 const VIEWS: ViewKey[] = ['map', 'list']
+const SHOWS: ShowKey[] = ['under', 'all']
 
 /** Keys this module owns; anything else in the query string (e.g. debug) is left alone. */
-export const FILTER_KEYS = ['minp', 'maxp', 'beds', 'baths', 'sf', 'yb', 'gr', 'wf', 'dv', 'sort', 'layer', 'metric', 'adj', 'll', 'z', 'view', 'follow']
+export const FILTER_KEYS = ['show', 'minp', 'maxp', 'beds', 'baths', 'sf', 'yb', 'gr', 'wf', 'dv', 'sort', 'layer', 'metric', 'adj', 'll', 'z', 'view', 'follow']
 
 const num = (s: string | null): number | undefined => {
   if (s === null || s.trim() === '') return undefined
@@ -55,7 +64,7 @@ const nonNeg = (n: number | undefined) => (n !== undefined && n >= 0 ? n : undef
 
 export function parseFilters(p: URLSearchParams): Filters {
   let minp = nonNeg(num(p.get('minp')))
-  let maxp = nonNeg(num(p.get('maxp')))
+  let maxp = p.has('maxp') ? (p.get('maxp') === 'any' ? undefined : nonNeg(num(p.get('maxp')))) : DEFAULT_BUDGET
   if (minp !== undefined && maxp !== undefined && maxp < minp) [minp, maxp] = [maxp, minp]
   let [sfMin, sfMax] = range(p.get('sf'))
   if (sfMin !== undefined && sfMax !== undefined && sfMax < sfMin) [sfMin, sfMax] = [sfMax, sfMin]
@@ -71,6 +80,7 @@ export function parseFilters(p: URLSearchParams): Filters {
 
   return {
     minp, maxp,
+    show: oneOf(p.get('show'), SHOWS, DEFAULTS.show),
     beds: nonNeg(num(p.get('beds'))),
     baths: nonNeg(num(p.get('baths'))),
     sfMin: nonNeg(sfMin), sfMax: nonNeg(sfMax),
@@ -99,7 +109,9 @@ export function applyFilters(base: URLSearchParams, f: Filters): URLSearchParams
     if (v !== null && v !== undefined) p.set(k, String(v))
   }
   set('minp', f.minp)
-  set('maxp', f.maxp)
+  if (f.maxp === undefined) p.set('maxp', 'any')
+  else if (f.maxp !== DEFAULT_BUDGET) p.set('maxp', String(f.maxp))
+  if (f.show !== DEFAULTS.show) p.set('show', f.show)
   set('beds', f.beds)
   set('baths', f.baths)
   set('sf', r(f.sfMin, f.sfMax))
@@ -118,10 +130,12 @@ export function applyFilters(base: URLSearchParams, f: Filters): URLSearchParams
   return p
 }
 
-/** The "Best deals under $500k" preset (replaces the old strict default). */
-export const BEST_DEALS: Partial<Filters> = { maxp: 500_000, dv: -0.1 }
+/** The deviation threshold in force: an explicit `dv` (old links) wins, otherwise "possibly undervalued" means -10% or lower. */
+export function effectiveDv(f: Filters): number | undefined {
+  return f.dv ?? (f.show === 'under' ? UNDER_DEV : undefined)
+}
 
-/** Number of active (non-default, non-viewport) filters, for the "Filters (3)" badge. */
-export function activeFilterCount(f: Filters): number {
-  return [f.minp, f.maxp, f.beds, f.baths, f.sfMin ?? f.sfMax, f.ybMin ?? f.ybMax, f.gr, f.wf, f.dv].filter((v) => v !== undefined).length + (f.adj !== 'none' ? 1 : 0)
+/** Number of active filters inside "More filters" (budget, bedrooms and the show toggle are always visible). */
+export function moreFilterCount(f: Filters): number {
+  return [f.minp, f.baths, f.sfMin ?? f.sfMax, f.ybMin ?? f.ybMax, f.gr, f.wf].filter((v) => v !== undefined).length + (f.adj !== 'none' ? 1 : 0)
 }

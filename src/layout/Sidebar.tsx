@@ -1,14 +1,9 @@
-import { useState, type FormEvent, type ReactNode } from 'react'
-import { Link, NavLink, useLocation, useNavigate, useSearchParams } from 'react-router'
+import type { ReactNode } from 'react'
+import { Link, NavLink, useLocation } from 'react-router'
 import { AccessibilityTool, LanguageSelect } from '../components/SiteTools'
 import { Icon, type IconName } from '../components/Icon'
-import { useIndex } from '../data/useIndex'
 import { useT } from '../i18n'
-import { applyFilters, BEST_DEALS, parseFilters } from '../lib/filters'
-import { findZip } from '../lib/zipFind'
-import { MapControls } from '../map/MapControls'
 import { setCollapsed } from '../state/sidebar'
-import { useFilters } from '../state/useFilters'
 
 interface Props {
   collapsed: boolean
@@ -44,76 +39,10 @@ function Item({ to, icon, label, onNavigate, match }: { to: string; icon: IconNa
   )
 }
 
-/** Jump straight to a ZIP code: type or pick from the list, then Enter. */
-function ZipFinder({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
-  const t = useT()
-  const index = useIndex()
-  const navigate = useNavigate()
-  const [params] = useSearchParams()
-  const [value, setValue] = useState('')
-  const [missing, setMissing] = useState(false)
-
-  if (collapsed) {
-    return (
-      <button type="button" className="sb-item" title={t('nav.zips')} onClick={() => setCollapsed(false)}>
-        <Icon name="search" />
-        <span className="sb-label">{t('nav.zips')}</span>
-      </button>
-    )
-  }
-
-  const go = (e: FormEvent) => {
-    e.preventDefault()
-    const zips = index.data?.zips ?? []
-    const zip = findZip(value, zips.map((z) => z.zip))
-    const row = zips.find((z) => z.zip === zip)
-    if (!zip || !row) {
-      setMissing(true)
-      return
-    }
-    setMissing(false)
-    setValue('')
-    const next = applyFilters(params, { ...parseFilters(params), ll: [row.centroid[1], row.centroid[0]], z: 12.5 })
-    navigate({ pathname: `/zip/${zip}`, search: `?${next.toString()}` })
-    onNavigate?.()
-  }
-
-  return (
-    <form className="sb-search" role="search" onSubmit={go}>
-      <label>
-        <span className="sr-only">{t('nav.zips')}</span>
-        <Icon name="search" />
-        <input
-          type="search"
-          inputMode="numeric"
-          list="zip-options"
-          autoComplete="off"
-          placeholder={t('nav.zipPlaceholder')}
-          value={value}
-          aria-invalid={missing}
-          aria-describedby={missing ? 'zip-missing' : undefined}
-          onChange={(e) => { setValue(e.target.value); setMissing(false) }}
-        />
-      </label>
-      <datalist id="zip-options">{(index.data?.zips ?? []).map((z) => <option key={z.zip} value={z.zip} />)}</datalist>
-      {missing && <p id="zip-missing" role="alert" className="sb-error">{t('nav.zipNone')}</p>}
-    </form>
-  )
-}
-
 export function SidebarContent({ collapsed, drawer, onNavigate }: Props) {
   const t = useT()
-  const { pathname, search } = useLocation()
-  const navigate = useNavigate()
-  const [filters, setFilters] = useFilters()
+  const { search } = useLocation()
   const rail = collapsed && !drawer
-  const onMap = pathname === '/' || pathname.startsWith('/zip/') || pathname.startsWith('/home/')
-
-  const bestDeals = () => {
-    setFilters({ ...BEST_DEALS, ll: [47.6, -122.25], z: 11.3 })
-    if (pathname !== '/') navigate({ pathname: '/', search })
-    onNavigate?.()
-  }
 
   return (
     <nav className="sb" aria-label={t('nav.main')} data-collapsed={rail}>
@@ -124,27 +53,9 @@ export function SidebarContent({ collapsed, drawer, onNavigate }: Props) {
         </Link>
       </div>
 
-      <ZipFinder collapsed={rail} onNavigate={onNavigate} />
-
       <Group label={t('nav.g.explore')}>
         <Item to="/" icon="map" label={t('nav.map')} match={(p) => p === '/' || p.startsWith('/zip/') || p.startsWith('/home/')} onNavigate={onNavigate} />
-        <button type="button" className="sb-item" title={t('chip.best')} onClick={bestDeals}>
-          <Icon name="star" />
-          <span className="sb-label">{t('chip.best')}</span>
-        </button>
       </Group>
-
-      {onMap && (
-        <Group label={t('nav.g.map')}>
-          {rail ? (
-            <button type="button" className="sb-item" title={t('nav.mapSettingsShort')} aria-label={t('nav.mapSettingsShort')} onClick={() => setCollapsed(false)}>
-              <Icon name="layers" />
-            </button>
-          ) : (
-            <MapControls layer={filters.layer} metric={filters.metric} onLayer={(layer) => setFilters({ layer })} onMetric={(metric) => setFilters({ metric })} />
-          )}
-        </Group>
-      )}
 
       <Group label={t('nav.g.tools')}>
         <Item to="/afford" icon="calculator" label={t('nav.afford')} onNavigate={onNavigate} />

@@ -2,7 +2,6 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useRef } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router'
 import { DebugPanel } from '../components/DebugPanel'
-import { IntroCard } from '../components/IntroCard'
 import { useT } from '../i18n'
 import { HomeCard } from '../components/HomeCard'
 import { money } from '../lib/format'
@@ -34,7 +33,6 @@ export function ListPanel() {
 
   return (
     <>
-      <IntroCard index={index} />
       <div className="result-head" aria-live="polite">
         <span>{!zoomedIn ? t('list.zoom') : loading && rows.length === 0 ? t('loading') : t(f.follow ? 'list.inView' : 'list.loaded', { n: rows.length.toLocaleString() })}</span>
         <span style={{ display: 'inline-flex', gap: 'var(--s-3)', alignItems: 'center' }}>

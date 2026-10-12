@@ -1,5 +1,5 @@
 import type { BBox, Home } from '../data/types'
-import type { Filters, SortKey } from './filters'
+import { effectiveDv, type Filters, type SortKey } from './filters'
 import { pointInBbox } from './geo'
 import { UNUSUAL_DEV } from './model'
 
@@ -8,6 +8,7 @@ export type PriceOf = (h: Home) => number
 const asSold: PriceOf = (h) => h.price
 
 export function filterHomes(homes: Home[], f: Filters, priceOf: PriceOf = asSold): Home[] {
+  const dv = effectiveDv(f)
   return homes.filter((h) => {
     const p = priceOf(h)
     if (f.minp !== undefined && p < f.minp) return false
@@ -20,7 +21,7 @@ export function filterHomes(homes: Home[], f: Filters, priceOf: PriceOf = asSold
     if (f.ybMax !== undefined && h.yearBuilt > f.ybMax) return false
     if (f.gr !== undefined && h.grade < f.gr) return false
     if (f.wf && !h.waterfront) return false
-    if (f.dv !== undefined && h.dev > f.dv) return false
+    if (dv !== undefined && h.dev > dv) return false
     return true
   })
 }

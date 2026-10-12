@@ -10,7 +10,8 @@ const home = (o: Partial<Home>): Home => ({
   sqft: 1500, lot: 4000, floors: 1, waterfront: 0, view: 0, condition: 3, grade: 7, yearBuilt: 1960, yearReno: 0,
   lat: 47.65, lon: -122.34, sim: [], ...o,
 })
-const F = (o: Partial<Filters>): Filters => ({ ...DEFAULTS, ...o })
+// DEFAULTS carry the app's starting budget and "possibly undervalued" view; these tests want an open filter set
+const F = (o: Partial<Filters>): Filters => ({ ...DEFAULTS, maxp: undefined, show: 'all', ...o })
 
 describe('filterHomes', () => {
   const homes = [

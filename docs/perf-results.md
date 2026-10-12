@@ -66,3 +66,18 @@ Colour vision: [`scripts/cvd_check.py`](../scripts/cvd_check.py) simulates prota
 the three middle classes of the deviation palette, neighbouring classes stay at least 17.2 Delta E apart in every
 simulation (19.9 for normal vision); the sequential palette's minimum is 11.0 (tritanopia). Labels, ▼/▲ arrows and numbers
 repeat what colour shows.
+
+## First-screen simplification (2026-10-12)
+
+The first screen had grown to 37 keyboard tab stops at 1280 px wide (sidebar 15, results panel 14, map 7, banner 1), with
+the "best deals" entry in three places and unexplained terms. After the simplification (ZIP search, Show toggle, budget,
+bedrooms and *More filters* up front; sidebar cut to four links plus settings; intro card and filter chips removed) the same
+count is 28 (sidebar 8, results panel 11, map 8, banner 1). That is a crude measure: the map's attribution links and
+zoom buttons are fixed cost, and what mattered more is the number of choices a first-time visitor must make, which
+went from about nine filter chips plus three "best deals" entry points to four always-visible controls.
+
+Lighthouse on the simplified build (mobile, production): accessibility, best practices and SEO 100 on `/`, `/?lang=zh`
+and `/?show=all&maxp=any`. Performance on the default URL, which now opens on Seattle and so loads about twenty ZIP
+chunks immediately: 79 (LCP 4.9 s) once, then 98, 97, 98, 98 and 98, 98 on the other two URLs. The spread is the same
+simulation effect described above (one run in seven landed in a slow cluster, at 79 rather than 88), so the honest
+range for this build is roughly 79–98 with most runs at 97–98.

@@ -9,30 +9,38 @@ follow-up to my INFO 5002 (Introduction to Python) final project at Northeastern
 By Daisy Tang. The graded course version (linear regression, R² 0.647, single-file Leaflet page) is kept unchanged and is
 still reachable from this site's About page.
 
-| Overview (icon rail) | Sidebar expanded | Home detail | Phone drawer |
+| First screen (sidebar, controls, results) | Phone, Chinese | Home detail | Phone map |
 |---|---|---|---|
-| ![Smoothed areas, clusters, intro card and results list beside a collapsed sidebar](docs/screenshots/overview.jpg) | ![Expanded sidebar: ZIP finder, map settings, tools, language and accessibility](docs/screenshots/sidebar.jpg) | ![One sale, its model estimate, similar sales and price bubbles on the map](docs/screenshots/home-detail.jpg) | ![The sidebar as a drawer on a phone](docs/screenshots/drawer-mobile.jpg) |
+| ![ZIP search, Show toggle, budget, bedrooms and results beside the sidebar](docs/screenshots/first-screen.png) | ![The same controls on a phone, in Chinese](docs/screenshots/list-mobile-zh.png) | ![One sale, its model estimate, similar sales and price bubbles on the map](docs/screenshots/home-detail.jpg) | ![Map with price bubbles on a phone](docs/screenshots/map-mobile.jpg) |
 
-The same page in Chinese: [docs/screenshots/overview-zh.jpg](docs/screenshots/overview-zh.jpg).
+(The first-screen image is cropped to the sidebar and results panel because the headless browser used for it does not
+draw map tiles.)
 
 ## What it does
 
+The first screen answers one question: **which homes sold for at least 10% less than a price model expected, within my
+budget?** It opens on Seattle and Bellevue with "Possibly undervalued" and a $500k budget already chosen, and everything
+else sits one step deeper.
+
+- **Four controls up front:** a ZIP search, *Show* (All sales / Possibly undervalued, with a plain-language explanation),
+  a budget slider and bedrooms. Baths, size, year built, waterfront, minimum price and "show prices in today's dollars"
+  are under *More filters*.
 - **Smooth map instead of hard ZIP edges.** Zoomed out, hexagonal areas (H3) are coloured by median price per square
   foot, shrunk toward their surroundings where sales are few and greyed out below three sales. Zoomed in you get clusters,
-  dots and `$840k` price bubbles. ZIP-code polygons are an optional layer.
+  dots and `$840k` price bubbles. ZIP-code polygons are an optional layer (*Map layers* button).
 - **A model estimate with its error, not just a verdict.** Every sale has a gradient-boosting estimate from a model that
   never saw it (5-fold, grouped by house), shown as `▼ 25% below model estimate`, plus the model's typical error band.
-- **Filters that live in the URL.** Price histogram with range sliders, beds, baths, size, year built, waterfront, "below
-  model by at least x%", sort order, map position and layer: copy the link and the same view opens.
+- **Links that keep your view.** Budget, bedrooms, filters, map position and layer all live in the URL: copy the link and the
+  same view opens. (Links made before the budget default existed, with no `maxp`, now open with the $500k default; use
+  `maxp=any` for no limit.)
 - **List and map linked both ways.** Hover a card to highlight its marker and back; selecting a sale is a route
   (`/home/:id`), so it survives redraws and can be shared.
 - **Today's dollars.** Restate 2014–15 prices with the Seattle Case-Shiller index, the FHFA ZIP index, or your own
   multiplier; a monthly-cost calculator and an income-based price range use the current mortgage rate.
 - **ZIP pages and comparison** (price distribution and size-vs-price charts), similar sales, and an About page whose
   numbers are read from the generated model card.
-- **Sidebar navigation** (like a dashboard): ZIP-code finder, map and homes, best deals, map layer and colour settings,
-  affordability and ZIP comparison tools, about and method, language and accessibility. It collapses to an icon rail on
-  narrower windows (the choice is remembered) and becomes a drawer on phones.
+- **A small sidebar:** Map & homes, Affordability, Compare ZIP codes, About & method, plus language and accessibility
+  settings. It collapses to an icon rail on narrower windows (remembered) and becomes a drawer on phones.
 - **English and 简体中文**, switchable from the sidebar (`?lang=zh` in the link keeps the choice; the browser language is
   the default). All interface text lives in `src/i18n/`; a test checks that every key exists in both languages.
 - **Accessibility settings** (sidebar): text size, high contrast, reduced animation, underlined links. They are

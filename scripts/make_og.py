@@ -1,4 +1,4 @@
-"""Compose the 1200x630 link-preview image (public/og.jpg) from docs/screenshots/overview.jpg.
+"""Compose the 1200x630 link-preview image (public/og.jpg) from docs/screenshots/map-only.jpg.
 
 Run: pipeline/.venv/bin/python scripts/make_og.py
 """
@@ -37,9 +37,9 @@ img = Image.new("RGB", (W, H), "#ffffff")
 d = ImageDraw.Draw(img)
 d.rectangle([0, 0, 14, H], fill="#0b5cad")
 
-shot = Image.open(ROOT / "docs/screenshots/overview.jpg").convert("RGB")
-# keep the map half of the screenshot (the right ~60%) and scale it to fill the right side
-map_part = shot.crop((int(shot.width * 0.50), 0, shot.width, shot.height))
+shot = Image.open(ROOT / "docs/screenshots/map-only.jpg").convert("RGB")
+# the screenshot already holds only the map; scale it to fill the right side
+map_part = shot
 scale = H / map_part.height
 map_part = map_part.resize((int(map_part.width * scale), H), Image.LANCZOS)
 img.paste(map_part, (W - map_part.width, 0))

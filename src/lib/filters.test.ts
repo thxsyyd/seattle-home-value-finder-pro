@@ -1,28 +1,41 @@
 import { describe, expect, it } from 'vitest'
-import { activeFilterCount, applyFilters, DEFAULTS, parseFilters } from './filters'
+import { applyFilters, DEFAULT_BUDGET, DEFAULTS, effectiveDv, moreFilterCount, parseFilters } from './filters'
 
 const p = (s: string) => new URLSearchParams(s)
 
 describe('filter URL codec', () => {
-  it('has all defaults for an empty query and writes an empty query back', () => {
+  it('opens on the starting view for an empty query and writes an empty query back', () => {
     const f = parseFilters(p(''))
-    expect(f).toMatchObject({ sort: 'dev', layer: 'hex', metric: 'ppsf', adj: 'none', view: 'map', follow: true })
+    expect(f).toMatchObject({ maxp: DEFAULT_BUDGET, show: 'under', sort: 'dev', layer: 'hex', metric: 'ppsf', adj: 'none', view: 'map', follow: true })
     expect(applyFilters(p(''), f).toString()).toBe('')
   })
 
+  it('writes "no limit" as maxp=any and reads it back', () => {
+    const f = parseFilters(p('maxp=any'))
+    expect(f.maxp).toBeUndefined()
+    expect(applyFilters(p(''), f).get('maxp')).toBe('any')
+    expect(parseFilters(applyFilters(p(''), f)).maxp).toBeUndefined()
+  })
+
+  it('keeps show=all and a custom budget; omits the default budget', () => {
+    expect(applyFilters(p(''), parseFilters(p('show=all&maxp=750000'))).toString()).toBe('maxp=750000&show=all')
+    expect(applyFilters(p(''), parseFilters(p('maxp=500000'))).has('maxp')).toBe(false)
+  })
+
   it('round-trips a full set of filters', () => {
-    const q = 'minp=200000&maxp=750000&beds=3&baths=2&sf=1000-2500&yb=1950-&gr=8&wf=1&dv=-10&sort=price&layer=zip&metric=dev&adj=x2.1&ll=47.6062%2C-122.3321&z=11.5&view=list&follow=0'
+    const q = 'minp=200000&maxp=750000&beds=3&baths=2&sf=1000-2500&yb=1950-&gr=8&wf=1&dv=-10&show=all&sort=price&layer=zip&metric=dev&adj=x2.1&ll=47.6062%2C-122.3321&z=11.5&view=list&follow=0'
     const f = parseFilters(p(q))
-    expect(f).toMatchObject({ minp: 200000, maxp: 750000, beds: 3, baths: 2, sfMin: 1000, sfMax: 2500, ybMin: 1950, gr: 8, wf: true, dv: -0.1, follow: false })
+    expect(f).toMatchObject({ minp: 200000, maxp: 750000, beds: 3, baths: 2, sfMin: 1000, sfMax: 2500, ybMin: 1950, gr: 8, wf: true, dv: -0.1, show: 'all', follow: false })
     expect(f.ybMax).toBeUndefined()
     expect(parseFilters(applyFilters(p(''), f))).toEqual(f)
   })
 
   it('falls back to defaults for invalid values', () => {
-    const f = parseFilters(p('minp=abc&beds=-2&sort=bogus&layer=3d&adj=evil&ll=1,2,3&z=99&view=x'))
+    const f = parseFilters(p('minp=abc&beds=-2&sort=bogus&layer=3d&adj=evil&ll=1,2,3&z=99&view=x&show=maybe&maxp=lots'))
     expect(f.minp).toBeUndefined()
     expect(f.beds).toBeUndefined()
-    expect(f).toMatchObject({ sort: DEFAULTS.sort, layer: DEFAULTS.layer, adj: 'none', view: 'map' })
+    expect(f).toMatchObject({ sort: DEFAULTS.sort, layer: DEFAULTS.layer, adj: 'none', view: 'map', show: 'under' })
+    expect(f.maxp).toBeUndefined() // an unreadable number falls back to "no limit", not to a silent filter
     expect(f.ll).toBeUndefined()
     expect(f.z).toBeUndefined()
   })
@@ -38,8 +51,16 @@ describe('filter URL codec', () => {
     expect(out.get('sort')).toBe('price')
     expect(out.has('layer')).toBe(false)
   })
+})
 
-  it('counts active filters but not view state', () => {
-    expect(activeFilterCount(parseFilters(p('beds=2&gr=7&sort=price&ll=47.6,-122.3&z=11')))).toBe(2)
+describe('derived values', () => {
+  it('uses -10% for "possibly undervalued", nothing for "all", and lets an old dv link win', () => {
+    expect(effectiveDv(parseFilters(p('')))).toBe(-0.1)
+    expect(effectiveDv(parseFilters(p('show=all')))).toBeUndefined()
+    expect(effectiveDv(parseFilters(p('dv=-20')))).toBe(-0.2)
+  })
+  it('counts only the filters hidden under "More filters"', () => {
+    expect(moreFilterCount(parseFilters(p('beds=2&maxp=any&show=all&sort=price&ll=47.6,-122.3&z=11')))).toBe(0)
+    expect(moreFilterCount(parseFilters(p('baths=2&gr=7&adj=metro&minp=100000')))).toBe(4)
   })
 })
