@@ -1,5 +1,5 @@
-import { lazy, Suspense } from 'react'
-import { useParams } from 'react-router'
+import { lazy, Suspense, useState } from 'react'
+import { useLocation, useNavigate, useParams } from 'react-router'
 import { PageShell } from '../components/PageShell'
 import { SearchLink } from '../components/SearchLink'
 import type { Home, IndexData, ZipRow } from '../data/types'
@@ -74,5 +74,42 @@ function HomeCompare({ a, b, index, t }: { a?: string; b?: string; index: IndexD
       <thead><tr><th scope="col">{t('compare.measure')}</th><th scope="col" className="num"><SearchLink to={`/home/${ha.key}`}>{t('compare.homeA')}</SearchLink></th><th scope="col" className="num"><SearchLink to={`/home/${hb.key}`}>{t('compare.homeB')}</SearchLink></th></tr></thead>
       <tbody>{rows.map(([k, f]) => <tr key={k}><th scope="row">{k}</th><td className="num">{f(ha)}</td><td className="num">{f(hb)}</td></tr>)}</tbody>
     </table>
+  )
+}
+
+/** /compare with no ZIP codes: choose two. */
+export function CompareIndex() {
+  const t = useT()
+  const index = useIndex()
+  const navigate = useNavigate()
+  const { search } = useLocation()
+  const zips = index.data?.zips ?? []
+  const [a, setA] = useState('98103')
+  const [b, setB] = useState('98004')
+  return (
+    <PageShell title={t('compare.title')}>
+      <p>{t('compareChooser.hint')}</p>
+      {zips.length === 0 ? (
+        <p>{t('loading')}</p>
+      ) : (
+        <form
+          className="fields"
+          onSubmit={(e) => {
+            e.preventDefault()
+            navigate({ pathname: `/compare/${a}/${b}`, search })
+          }}
+        >
+          {([[a, setA, 'compareChooser.a'], [b, setB, 'compareChooser.b']] as const).map(([val, set, label]) => (
+            <label key={label} className="field">
+              <span>{t(label)}</span>
+              <select value={val} onChange={(e) => set(e.target.value)} className="select-field">
+                {zips.map((z) => <option key={z.zip} value={z.zip}>{z.zip}</option>)}
+              </select>
+            </label>
+          ))}
+          <button type="submit" className="primary" disabled={a === b}>{t('compareChooser.go')}</button>
+        </form>
+      )}
+    </PageShell>
   )
 }

@@ -38,11 +38,11 @@ Production build served with `vite preview`; Lighthouse 13.5.0 (headless Chrome,
 
 | Page | Accessibility | Best practices | SEO |
 |---|---|---|---|
-| `/` (English), `/?lang=zh`, deep link `/?ll=47.62,-122.33&z=11` | 100 | 100 | 100 |
+| `/` (English), `/?lang=zh`, deep link `/?ll=47.62,-122.33&z=11`, `/about` | 100 | 100 | 100 |
 
 **Performance is not stable between runs.** Repeating Lighthouse on the *same* build gives two clusters: performance 98 (LCP
 2.0 s) in most runs and 87–89 (LCP 3.5 s) in some. For the current build: 98, 87, 98, 88, 98 on `/` and 98, 98, 98 on the
-deep link; the previous build, measured the same way, gave 99 and 88. The 1.5 s step is the simulated network model
+deep link (and, after the sidebar was added, 88, 88 on `/`, 98 on `/?lang=zh` and `/about`); the previous build, measured the same way, gave 99 and 88. The 1.5 s step is the simulated network model
 scheduling one more round trip, not a code change, so quote the range (87–99), not a single score. Lighthouse also stops
 at page idle, so map tiles that arrive later are not included.
 
@@ -57,7 +57,9 @@ Real changes that came out of this measuring:
 Accessibility: axe-core (WCAG 2.0/2.1 A and AA plus best-practice rules, via the development-only `?a11y=1` runner in
 `src/dev/axe.ts`) reported no violations on `/` (also with the filter panels, in Chinese, with the accessibility dialog
 open and with high contrast on), `/zip/:zip`, `/home/:id` (calculator open), `/compare/:a/:b`, `/afford` and `/about`
-(the last four checked in English before the language work; `/about` and `/home/:id` re-checked in Chinese). Automated
+(the last four checked in English before the language work; `/about` and `/home/:id` re-checked in Chinese). After the sidebar was added, axe was re-run on the expanded and collapsed sidebar, the phone drawer, the accessibility dialog,
+the ZIP finder, `/compare` and `/compare/:a/:b`, in English and Chinese: no violations (it caught two real issues on the way:
+the brand link's accessible name and an `h1` outside a landmark, both fixed). Automated
 checks do not replace a manual screen-reader pass, which has not been done.
 
 Colour vision: [`scripts/cvd_check.py`](../scripts/cvd_check.py) simulates protan, deutan and tritan vision. After adjusting

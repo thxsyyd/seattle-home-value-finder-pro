@@ -1,4 +1,5 @@
 import { createBrowserRouter } from 'react-router'
+import { AppShell } from './layout/AppShell'
 import { Explore } from './routes/Explore'
 import { ListPanel } from './routes/ListPanel'
 import { Placeholder } from './routes/Placeholder'
@@ -7,18 +8,24 @@ import { Placeholder } from './routes/Placeholder'
 export const router = createBrowserRouter(
   [
     {
-      path: '/',
-      element: <Explore />,
+      element: <AppShell />,
       children: [
-        { index: true, element: <ListPanel /> },
-        { path: 'zip/:zip', lazy: async () => ({ Component: (await import('./routes/ZipDetail')).ZipDetail }) },
-        { path: 'home/:id', lazy: async () => ({ Component: (await import('./routes/HomeDetail')).HomeDetail }) },
+        {
+          path: '/',
+          element: <Explore />,
+          children: [
+            { index: true, element: <ListPanel /> },
+            { path: 'zip/:zip', lazy: async () => ({ Component: (await import('./routes/ZipDetail')).ZipDetail }) },
+            { path: 'home/:id', lazy: async () => ({ Component: (await import('./routes/HomeDetail')).HomeDetail }) },
+          ],
+        },
+        { path: '/compare', lazy: async () => ({ Component: (await import('./routes/Compare')).CompareIndex }) },
+        { path: '/compare/:a/:b', lazy: async () => ({ Component: (await import('./routes/Compare')).Compare }) },
+        { path: '/afford', lazy: async () => ({ Component: (await import('./routes/Afford')).Afford }) },
+        { path: '/about', lazy: async () => ({ Component: (await import('./routes/About')).About }) },
+        { path: '*', element: <Placeholder titleKey="notFound" /> },
       ],
     },
-    { path: '/compare/:a/:b', lazy: async () => ({ Component: (await import('./routes/Compare')).Compare }) },
-    { path: '/afford', lazy: async () => ({ Component: (await import('./routes/Afford')).Afford }) },
-    { path: '/about', lazy: async () => ({ Component: (await import('./routes/About')).About }) },
-    { path: '*', element: <Placeholder titleKey="notFound" /> },
   ],
   { basename: import.meta.env.BASE_URL },
 )

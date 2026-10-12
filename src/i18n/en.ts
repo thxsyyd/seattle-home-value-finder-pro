@@ -1,19 +1,39 @@
 /** English UI text. Keys are flat; {name} marks a value filled in at run time. */
 export const en = {
   // shell
-  'skip': 'Skip to results',
+  'skip': 'Skip to main content',
   'h1': 'Seattle Home Value Finder: King County home sales, 2014–2015',
-  'brand.home': 'Seattle Home Value Finder, home',
-  'nav.site': 'Site',
   'nav.afford': 'Affordability',
   'nav.about': 'About',
-  'nav.backToMap': '← Back to the map',
   'panel.results': 'Results',
   'loading': 'Loading…',
   'view.toggle': 'Show list or map',
   'view.list': 'List',
   'view.map': 'Map',
   'lang.label': 'Language',
+
+  // sidebar
+  'nav.main': 'Main navigation',
+  'nav.g.explore': 'Explore',
+  'nav.g.map': 'Map settings',
+  'nav.g.tools': 'Tools',
+  'nav.g.learn': 'Learn',
+  'nav.g.settings': 'Settings',
+  'nav.map': 'Map & homes',
+  'nav.zips': 'Find a ZIP code',
+  'nav.zipPlaceholder': 'ZIP code, e.g. 98103',
+  'nav.zipNone': 'No sales in that ZIP code',
+  'nav.compare': 'Compare ZIP codes',
+  'nav.method': 'About & method',
+  'nav.collapse': 'Collapse sidebar',
+  'nav.expand': 'Expand sidebar',
+  'nav.open': 'Open menu',
+  'nav.close': 'Close menu',
+  'nav.mapSettingsShort': 'Map settings (expands the sidebar)',
+  'compareChooser.hint': 'Pick two ZIP codes to compare prices side by side. To compare two specific homes, open a home and use “Compare with this home” under Similar sales.',
+  'compareChooser.a': 'First ZIP code',
+  'compareChooser.b': 'Second ZIP code',
+  'compareChooser.go': 'Compare',
 
   // banner
   'banner.label': 'About this data',

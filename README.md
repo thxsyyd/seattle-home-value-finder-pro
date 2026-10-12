@@ -9,9 +9,11 @@ follow-up to my INFO 5002 (Introduction to Python) final project at Northeastern
 By Daisy Tang. The graded course version (linear regression, R² 0.647, single-file Leaflet page) is kept unchanged and is
 still reachable from this site's About page.
 
-| Overview | In Chinese | Home detail | Phone |
+| Overview (icon rail) | Sidebar expanded | Home detail | Phone drawer |
 |---|---|---|---|
-| ![Smoothed price-per-square-foot areas, clusters, intro card and the results list](docs/screenshots/overview.jpg) | ![The same page in Simplified Chinese](docs/screenshots/overview-zh.jpg) | ![One sale, its model estimate, similar sales and price bubbles on the map](docs/screenshots/home-detail.jpg) | ![Map with price bubbles on a phone](docs/screenshots/map-mobile.jpg) |
+| ![Smoothed areas, clusters, intro card and results list beside a collapsed sidebar](docs/screenshots/overview.jpg) | ![Expanded sidebar: ZIP finder, map settings, tools, language and accessibility](docs/screenshots/sidebar.jpg) | ![One sale, its model estimate, similar sales and price bubbles on the map](docs/screenshots/home-detail.jpg) | ![The sidebar as a drawer on a phone](docs/screenshots/drawer-mobile.jpg) |
+
+The same page in Chinese: [docs/screenshots/overview-zh.jpg](docs/screenshots/overview-zh.jpg).
 
 ## What it does
 
@@ -28,9 +30,12 @@ still reachable from this site's About page.
   multiplier; a monthly-cost calculator and an income-based price range use the current mortgage rate.
 - **ZIP pages and comparison** (price distribution and size-vs-price charts), similar sales, and an About page whose
   numbers are read from the generated model card.
-- **English and 简体中文**, switchable from the header (`?lang=zh` in the link keeps the choice; the browser language is
+- **Sidebar navigation** (like a dashboard): ZIP-code finder, map and homes, best deals, map layer and colour settings,
+  affordability and ZIP comparison tools, about and method, language and accessibility. It collapses to an icon rail on
+  narrower windows (the choice is remembered) and becomes a drawer on phones.
+- **English and 简体中文**, switchable from the sidebar (`?lang=zh` in the link keeps the choice; the browser language is
   the default). All interface text lives in `src/i18n/`; a test checks that every key exists in both languages.
-- **Accessibility settings** (header button): text size, high contrast, reduced animation, underlined links. They are
+- **Accessibility settings** (sidebar): text size, high contrast, reduced animation, underlined links. They are
   saved in the browser only and applied before first paint.
 - **Phone layout, keyboard use, colour-blind-safe palettes.** See [docs/perf-results.md](docs/perf-results.md) for the
   measurements behind these claims.

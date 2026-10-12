@@ -3,19 +3,39 @@ import type { MsgKey } from './en'
 /** 简体中文界面文字。键与 en.ts 一一对应（由测试检查），{name} 为运行时填入的值。 */
 export const zh: Record<MsgKey, string> = {
   // shell
-  'skip': '跳到结果',
+  'skip': '跳到主要内容',
   'h1': 'Seattle Home Value Finder：King County 房屋成交，2014–2015',
-  'brand.home': 'Seattle Home Value Finder，返回首页',
-  'nav.site': '站点导航',
   'nav.afford': '负担能力',
   'nav.about': '关于',
-  'nav.backToMap': '← 返回地图',
   'panel.results': '结果',
   'loading': '加载中…',
   'view.toggle': '切换列表或地图',
   'view.list': '列表',
   'view.map': '地图',
   'lang.label': '语言',
+
+  // sidebar
+  'nav.main': '主导航',
+  'nav.g.explore': '探索',
+  'nav.g.map': '地图设置',
+  'nav.g.tools': '工具',
+  'nav.g.learn': '了解',
+  'nav.g.settings': '设置',
+  'nav.map': '地图和房源',
+  'nav.zips': '查找邮编',
+  'nav.zipPlaceholder': '邮编，例如 98103',
+  'nav.zipNone': '该邮编没有成交记录',
+  'nav.compare': '对比邮编',
+  'nav.method': '关于和方法',
+  'nav.collapse': '收起侧边栏',
+  'nav.expand': '展开侧边栏',
+  'nav.open': '打开菜单',
+  'nav.close': '关闭菜单',
+  'nav.mapSettingsShort': '地图设置（会展开侧边栏）',
+  'compareChooser.hint': '选择两个邮编，并排比较价格。要比较两套具体的房子，请打开一套房，在“相似成交”下点“与这套房对比”。',
+  'compareChooser.a': '第一个邮编',
+  'compareChooser.b': '第二个邮编',
+  'compareChooser.go': '对比',
 
   // banner
   'banner.label': '关于这份数据',

@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { resetPrefs, setPrefs, usePrefs, type A11yPrefs } from '../a11y/prefs'
 import { LANGS, useLang, useSetLang, useT, type Lang } from '../i18n'
+import { Icon } from './Icon'
 
 function Choice<K extends keyof A11yPrefs>({ label, name, value, options }: { label: string; name: K; value: A11yPrefs[K]; options: [A11yPrefs[K], string][] }) {
   return (
@@ -15,28 +16,40 @@ function Choice<K extends keyof A11yPrefs>({ label, name, value, options }: { la
   )
 }
 
-/** Language selector and accessibility settings, shared by every page header. */
-export function SiteTools() {
-  const t = useT()
+/** Keeps <html lang> in step with the chosen language. Rendered once, by the app shell. */
+export function LangSync() {
   const lang = useLang()
-  const setLang = useSetLang()
-  const prefs = usePrefs()
-  const dialog = useRef<HTMLDialogElement>(null)
-
   useEffect(() => {
     document.documentElement.lang = LANGS.find((l) => l.code === lang)?.htmlLang ?? 'en'
   }, [lang])
+  return null
+}
 
+export function LanguageSelect() {
+  const t = useT()
+  const lang = useLang()
+  const setLang = useSetLang()
   return (
-    <div className="site-tools">
-      <label className="lang-select">
-        <span className="sr-only">{t('lang.label')}</span>
-        <select value={lang} onChange={(e) => setLang(e.target.value as Lang)} aria-label={t('lang.label')} lang={lang}>
-          {LANGS.map((l) => <option key={l.code} value={l.code} lang={l.htmlLang}>{l.label}</option>)}
-        </select>
-      </label>
-      <button type="button" className="tool-btn" onClick={() => dialog.current?.showModal()} aria-haspopup="dialog">
-        {t('a11y.button')}
+    <label className="sb-field">
+      <Icon name="globe" />
+      <span className="sb-label">{t('lang.label')}</span>
+      <select value={lang} onChange={(e) => setLang(e.target.value as Lang)} aria-label={t('lang.label')} lang={lang}>
+        {LANGS.map((l) => <option key={l.code} value={l.code} lang={l.htmlLang}>{l.label}</option>)}
+      </select>
+    </label>
+  )
+}
+
+/** Accessibility settings: a button for the sidebar plus the modal dialog it opens. */
+export function AccessibilityTool({ onOpen }: { onOpen?: () => void }) {
+  const t = useT()
+  const prefs = usePrefs()
+  const dialog = useRef<HTMLDialogElement>(null)
+  return (
+    <>
+      <button type="button" className="sb-item" title={t('a11y.button')} aria-haspopup="dialog" onClick={() => { onOpen?.(); dialog.current?.showModal() }}>
+        <Icon name="access" />
+        <span className="sb-label">{t('a11y.button')}</span>
       </button>
       <dialog ref={dialog} className="a11y-dialog" aria-labelledby="a11y-title" onClick={(e) => { if (e.target === dialog.current) dialog.current?.close() }}>
         <h2 id="a11y-title">{t('a11y.title')}</h2>
@@ -55,6 +68,6 @@ export function SiteTools() {
           <button type="button" className="primary" onClick={() => dialog.current?.close()}>{t('a11y.close')}</button>
         </div>
       </dialog>
-    </div>
+    </>
   )
 }

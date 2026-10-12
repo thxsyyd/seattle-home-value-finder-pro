@@ -1,8 +1,7 @@
 import { lazy, Suspense, useCallback, useMemo, useState } from 'react'
-import { Link, Outlet, useLocation, useMatch, useNavigate } from 'react-router'
+import { Outlet, useLocation, useMatch, useNavigate } from 'react-router'
 import { DisclaimerBanner } from '../components/DisclaimerBanner'
 import { FilterBar } from '../components/FilterBar'
-import { SiteTools } from '../components/SiteTools'
 import { useT } from '../i18n'
 import type { Home, IndexData } from '../data/types'
 import { useHome } from '../data/useHome'
@@ -11,7 +10,6 @@ import { useViewportHomes } from '../data/useViewportHomes'
 import { viewBbox } from '../lib/geo'
 import { makePriceOf } from '../lib/priceIndex'
 import { filterHomes, inBbox, sortHomes, type PriceOf } from '../lib/query'
-import { MapControls } from '../map/MapControls'
 import type { ViewState } from '../map/MapView'
 import { DEFAULT_VIEW } from '../map/view'
 import { useFilters } from '../state/useFilters'
@@ -80,19 +78,10 @@ export function Explore() {
 
   return (
     <div className="explore" data-view={filters.view} data-detail={detail}>
-      <a className="skip-link" href="#panel">{t('skip')}</a>
-      <header className="topbar">
-        <h1 className="sr-only">{t('h1')}</h1>
-        <Link to={{ pathname: '/', search }} className="brand" aria-label={t('brand.home')}>Seattle Home Value Finder</Link>
-        <nav className="topnav" aria-label={t('nav.site')}>
-          <Link to={{ pathname: '/afford', search }}>{t('nav.afford')}</Link>
-          <Link to={{ pathname: '/about', search }}>{t('nav.about')}</Link>
-          <SiteTools />
-        </nav>
-      </header>
       <DisclaimerBanner range={index.data?.dataRange} />
       <main className="split">
-        <section id="panel" className="panel" aria-label={t('panel.results')} tabIndex={-1}>
+        <h1 className="sr-only">{t('h1')}</h1>
+        <section id="main-content" className="panel" aria-label={t('panel.results')} tabIndex={-1}>
           {!detail && <FilterBar filters={filters} index={index.data} onChange={(patch) => setFilters(patch)} />}
           <Outlet context={ctx} />
         </section>
@@ -100,9 +89,6 @@ export function Explore() {
           <Suspense fallback={<p style={{ padding: 'var(--s-5)' }}>{t('map.loading')}</p>}>
             <MapView index={index.data} filters={filters} homes={filtered} priceOf={priceOf} selected={selected} onSelectHome={onSelectHome} onViewChange={onViewChange} />
           </Suspense>
-          <div className="mapctl">
-            <MapControls layer={filters.layer} metric={filters.metric} onLayer={(layer) => setFilters({ layer })} onMetric={(metric) => setFilters({ metric })} />
-          </div>
         </section>
       </main>
       <nav className="viewtoggle" aria-label={t('view.toggle')}>

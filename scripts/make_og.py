@@ -39,7 +39,7 @@ d.rectangle([0, 0, 14, H], fill="#0b5cad")
 
 shot = Image.open(ROOT / "docs/screenshots/overview.jpg").convert("RGB")
 # keep the map half of the screenshot (the right ~60%) and scale it to fill the right side
-map_part = shot.crop((int(shot.width * 0.44), 0, shot.width, shot.height))
+map_part = shot.crop((int(shot.width * 0.50), 0, shot.width, shot.height))
 scale = H / map_part.height
 map_part = map_part.resize((int(map_part.width * scale), H), Image.LANCZOS)
 img.paste(map_part, (W - map_part.width, 0))
