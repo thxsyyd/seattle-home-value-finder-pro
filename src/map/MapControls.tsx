@@ -1,3 +1,4 @@
+import { useT } from '../i18n'
 import type { LayerKey, MetricKey } from '../lib/filters'
 
 function Group<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: [T, string][]; onChange: (v: T) => void }) {
@@ -22,10 +23,11 @@ function Group<T extends string>({ label, value, options, onChange }: { label: s
 }
 
 export function MapControls({ layer, metric, onLayer, onMetric }: { layer: LayerKey; metric: MetricKey; onLayer: (l: LayerKey) => void; onMetric: (m: MetricKey) => void }) {
+  const t = useT()
   return (
     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--s-2)' }}>
-      <Group<LayerKey> label="Map areas" value={layer === 'zip' ? 'zip' : 'hex'} options={[['hex', 'Smoothed areas'], ['zip', 'ZIP codes']]} onChange={onLayer} />
-      <Group<MetricKey> label="Colour by" value={metric} options={[['ppsf', '$/sq ft'], ['price', 'Price'], ['dev', 'vs. model']]} onChange={onMetric} />
+      <Group<LayerKey> label={t('map.areas')} value={layer === 'zip' ? 'zip' : 'hex'} options={[['hex', t('map.smoothed')], ['zip', t('map.zips')]]} onChange={onLayer} />
+      <Group<MetricKey> label={t('map.colourBy')} value={metric} options={[['ppsf', t('map.ppsf')], ['price', t('map.price')], ['dev', t('map.dev')]]} onChange={onMetric} />
     </div>
   )
 }

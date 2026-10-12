@@ -1,5 +1,6 @@
 import { Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from 'recharts'
 import type { Home } from '../data/types'
+import { useT } from '../i18n'
 import { histogram } from '../lib/query'
 import { priceShort } from '../lib/format'
 
@@ -14,6 +15,7 @@ const TOP = 1_500_000
 
 /** Price distribution (share of each ZIP's sales per bin) and size-vs-price scatter. Loaded lazily with Recharts. */
 export default function ZipCharts({ series }: { series: Series[] }) {
+  const t = useT()
   const bins = TOP / STEP
   const counts = series.map((s) => histogram(s.homes.map((h) => h.price), STEP, TOP))
   const data = Array.from({ length: bins }, (_, i) => {
@@ -25,27 +27,27 @@ export default function ZipCharts({ series }: { series: Series[] }) {
 
   return (
     <>
-      <h2 className="chart-h">Sale prices</h2>
-      <div className="chart-box" role="img" aria-label="Bar chart: share of sales in each price band, by ZIP code">
+      <h2 className="chart-h">{t('charts.prices')}</h2>
+      <div className="chart-box" role="img" aria-label={t('charts.barAria')}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis dataKey="bin" tick={{ fontSize: 12 }} interval={1} />
             <YAxis tick={{ fontSize: 12 }} unit="%" width={44} />
-            <Tooltip formatter={(v) => `${v}% of sales`} />
+            <Tooltip formatter={(v) => t('charts.share', { v: String(v) })} />
             {series.length > 1 && <Legend />}
             {series.map((s) => <Bar key={s.name} dataKey={s.name} fill={s.color} />)}
           </BarChart>
         </ResponsiveContainer>
       </div>
-      <h2 className="chart-h">Size and price</h2>
-      <div className="chart-box" role="img" aria-label="Scatter chart: living area against sale price">
+      <h2 className="chart-h">{t('charts.size')}</h2>
+      <div className="chart-box" role="img" aria-label={t('charts.scatterAria')}>
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis type="number" dataKey="x" name="Living area" unit=" sqft" tick={{ fontSize: 12 }} domain={[0, 6000]} />
-            <YAxis type="number" dataKey="y" name="Price" tick={{ fontSize: 12 }} tickFormatter={priceShort} width={56} domain={[0, 3_000_000]} />
-            <Tooltip cursor={{ strokeDasharray: '3 3' }} formatter={(v, n) => (n === 'Price' ? priceShort(Number(v)) : v)} />
+            <XAxis type="number" dataKey="x" name={t('charts.area')} tick={{ fontSize: 12 }} domain={[0, 6000]} />
+            <YAxis type="number" dataKey="y" name={t('charts.price')} tick={{ fontSize: 12 }} tickFormatter={priceShort} width={56} domain={[0, 3_000_000]} />
+            <Tooltip cursor={{ strokeDasharray: '3 3' }} formatter={(v, n) => (n === t('charts.price') ? priceShort(Number(v)) : v)} />
             {series.length > 1 && <Legend />}
             {series.map((s, k) => <Scatter key={s.name} name={s.name} data={dots[k]} fill={s.color} fillOpacity={0.55} />)}
           </ScatterChart>

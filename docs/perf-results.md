@@ -32,29 +32,33 @@ How to read this:
 
 To reproduce: build, serve, open `/?ll=47.62,-122.33&z=12&debug=1`, paste the script into the console.
 
-## Page quality checks (2026-10-11)
+## Page quality checks (2026-10-11, updated after adding languages and accessibility settings)
 
-Production build served with `vite preview`; Lighthouse 13.5.0 (headless Chrome, simulated throttling for mobile).
+Production build served with `vite preview`; Lighthouse 13.5.0 (headless Chrome, simulated mobile throttling).
 
-| Page | Form factor | Performance | Accessibility | Best practices | SEO |
-|---|---|---|---|---|---|
-| `/` (county overview) | mobile | 99 | 100 | 100 | 100 |
-| `/?ll=47.62,-122.33&z=11` (deep link, ~20 ZIP chunks) | mobile | 98 (three runs: 98, 98, 98) | n/a | n/a | n/a |
-| `/?ll=47.62,-122.33&z=11` | desktop | 97 (before the fixes below) | 100 | 100 | 91 (before robots.txt) |
+| Page | Accessibility | Best practices | SEO |
+|---|---|---|---|
+| `/` (English), `/?lang=zh`, deep link `/?ll=47.62,-122.33&z=11` | 100 | 100 | 100 |
 
-Lighthouse stops measuring once the page is idle, so it does not include map tiles that arrive later.
+**Performance is not stable between runs.** Repeating Lighthouse on the *same* build gives two clusters: performance 98 (LCP
+2.0 s) in most runs and 87–89 (LCP 3.5 s) in some. For the current build: 98, 87, 98, 88, 98 on `/` and 98, 98, 98 on the
+deep link; the previous build, measured the same way, gave 99 and 88. The 1.5 s step is the simulated network model
+scheduling one more round trip, not a code change, so quote the range (87–99), not a single score. Lighthouse also stops
+at page idle, so map tiles that arrive later are not included.
 
-Things the first runs found and fixed:
+Real changes that came out of this measuring:
 
-- Mobile deep link scored 43 (total blocking time 2.8 s): every arriving ZIP chunk rebuilt the filtered list and the map's
-  GeoJSON, about twenty times in a burst. Chunk arrivals within 80 ms are now merged into one update (TBT 40–120 ms).
-- No `main` landmark visible on phones (the results panel is hidden in map view): the whole split view is now `<main>`.
+- Mobile deep link scored 43 (total blocking time 2.8 s) when every arriving ZIP chunk rebuilt the filtered list and the
+  map GeoJSON. Chunk arrivals within 80 ms are now merged into one update (TBT now 30–110 ms).
+- Pages other than the map are lazy-loaded: entry JavaScript went from 128 KB to 81 KB gzipped.
+- No `main` landmark was visible on phones (the results panel is hidden in map view): the whole split view is `<main>`.
 - `robots.txt` was served as the SPA fallback page: added a real file.
 
 Accessibility: axe-core (WCAG 2.0/2.1 A and AA plus best-practice rules, via the development-only `?a11y=1` runner in
-`src/dev/axe.ts`) reports no violations on `/` (also with the price and price-basis filter panels open), `/zip/:zip`,
-`/home/:id` (calculator open), `/compare/:a/:b`, `/afford` and `/about`. Automated checks do not replace a manual
-screen-reader pass, which has not been done.
+`src/dev/axe.ts`) reported no violations on `/` (also with the filter panels, in Chinese, with the accessibility dialog
+open and with high contrast on), `/zip/:zip`, `/home/:id` (calculator open), `/compare/:a/:b`, `/afford` and `/about`
+(the last four checked in English before the language work; `/about` and `/home/:id` re-checked in Chinese). Automated
+checks do not replace a manual screen-reader pass, which has not been done.
 
 Colour vision: [`scripts/cvd_check.py`](../scripts/cvd_check.py) simulates protan, deutan and tritan vision. After adjusting
 the three middle classes of the deviation palette, neighbouring classes stay at least 17.2 Delta E apart in every

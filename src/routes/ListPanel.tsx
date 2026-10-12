@@ -2,6 +2,8 @@ import { useVirtualizer } from '@tanstack/react-virtual'
 import { useEffect, useRef } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router'
 import { DebugPanel } from '../components/DebugPanel'
+import { IntroCard } from '../components/IntroCard'
+import { useT } from '../i18n'
 import { HomeCard } from '../components/HomeCard'
 import { money } from '../lib/format'
 import type { SortKey } from '../lib/filters'
@@ -17,6 +19,7 @@ export function ListPanel() {
   const [f, setFilters] = useFilters()
   const [params] = useSearchParams()
   const hover = useHover()
+  const t = useT()
   const scroller = useRef<HTMLDivElement>(null)
   const virt = useVirtualizer({ count: rows.length, getScrollElement: () => scroller.current, estimateSize: () => ROW + GAP, overscan: 6 })
 
@@ -31,20 +34,21 @@ export function ListPanel() {
 
   return (
     <>
+      <IntroCard index={index} />
       <div className="result-head" aria-live="polite">
-        <span>{!zoomedIn ? 'Zoom in or pick a ZIP code' : loading && rows.length === 0 ? 'Loading…' : `${rows.length.toLocaleString()} homes ${f.follow ? 'in view' : 'loaded'}`}</span>
+        <span>{!zoomedIn ? t('list.zoom') : loading && rows.length === 0 ? t('loading') : t(f.follow ? 'list.inView' : 'list.loaded', { n: rows.length.toLocaleString() })}</span>
         <span style={{ display: 'inline-flex', gap: 'var(--s-3)', alignItems: 'center' }}>
           <label>
-            <input type="checkbox" checked={f.follow} onChange={(e) => setFilters({ follow: e.target.checked })} /> Search as map moves
+            <input type="checkbox" checked={f.follow} onChange={(e) => setFilters({ follow: e.target.checked })} /> {t('list.follow')}
           </label>
           <label>
-            Sort{' '}
+            {t('sort.label')}{' '}
             <select value={f.sort} onChange={(e) => setFilters({ sort: e.target.value as SortKey })}>
-              <option value="dev">Most below model</option>
-              <option value="price">Price: low to high</option>
-              <option value="ppsf">$ per sq ft</option>
-              <option value="newest">Newest sale</option>
-              <option value="sqft">Largest</option>
+              <option value="dev">{t('sort.dev')}</option>
+              <option value="price">{t('sort.price')}</option>
+              <option value="ppsf">{t('sort.ppsf')}</option>
+              <option value="newest">{t('sort.newest')}</option>
+              <option value="sqft">{t('sort.sqft')}</option>
             </select>
           </label>
         </span>
@@ -59,13 +63,13 @@ export function ListPanel() {
                   onClick={() => setFilters({ ll: [z.centroid[1], z.centroid[0]], z: 12 }, { push: true })}
                   style={{ width: '100%', textAlign: 'left', background: 'none', border: 0, padding: 'var(--s-2) 0', cursor: 'pointer', font: 'inherit', minHeight: 44 }}
                 >
-                  <strong>{z.zip}</strong> · {money(z.medPrice)} median · ${z.medPpsf}/sq ft · {z.n} sales
+                  {t('list.zipRow', { zip: z.zip, price: money(z.medPrice), ppsf: z.medPpsf, n: z.n })}
                 </button>
               </li>
             ))}
           </ol>
         )}
-        {zoomedIn && !loading && rows.length === 0 && <p className="empty">No homes match. Try zooming out or clearing a filter.</p>}
+        {zoomedIn && !loading && rows.length === 0 && <p className="empty">{t('list.empty')}</p>}
         {zoomedIn && band && (
           <ol style={{ listStyle: 'none', margin: 0, padding: 0, position: 'relative', height: virt.getTotalSize() }}>
             {virt.getVirtualItems().map((v) => {

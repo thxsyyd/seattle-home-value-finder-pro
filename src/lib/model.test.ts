@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { describeDev, UNUSUAL_DEV } from './model'
+import { translate } from '../i18n'
+import { describeDev as describeWith, UNUSUAL_DEV } from './model'
+
+const t = (k: Parameters<typeof translate>[1], p?: Record<string, string | number>) => translate('en', k, p)
+const describeDev = (d: number, b: { p10: number; p90: number }) => describeWith(d, b, t)
 
 const band = { p10: -0.16, p90: 0.18 }
 

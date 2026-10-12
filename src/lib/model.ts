@@ -1,4 +1,5 @@
 import type { IndexData } from '../data/types'
+import type { T } from '../i18n'
 import { signedPct } from './format'
 
 /** Sales this far below the model are more often unusual transactions than bargains. */
@@ -12,9 +13,9 @@ export interface DevInfo {
 }
 
 /** Describe how a sale compares with the model, using the model's own error band (p10..p90). */
-export function describeDev(dev: number, band: IndexData['model']['error_overall']): DevInfo {
+export function describeDev(dev: number, band: IndexData['model']['error_overall'], t: T): DevInfo {
   const unusual = dev <= UNUSUAL_DEV
-  if (dev < band.p10) return { tone: 'below', arrow: '▼', text: `${Math.round(-dev * 100)}% below model estimate`, unusual }
-  if (dev > band.p90) return { tone: 'above', arrow: '▲', text: `${Math.round(dev * 100)}% above model estimate`, unusual }
-  return { tone: 'near', arrow: '≈', text: `${signedPct(dev)} vs model (within its usual error)`, unusual }
+  if (dev < band.p10) return { tone: 'below', arrow: '▼', text: t('dev.below', { n: Math.round(-dev * 100) }), unusual }
+  if (dev > band.p90) return { tone: 'above', arrow: '▲', text: t('dev.above', { n: Math.round(dev * 100) }), unusual }
+  return { tone: 'near', arrow: '≈', text: t('dev.near', { pct: signedPct(dev) }), unusual }
 }

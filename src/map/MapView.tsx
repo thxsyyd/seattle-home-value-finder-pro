@@ -9,6 +9,8 @@ import type { BBox, Home, IndexData } from '../data/types'
 import type { Filters } from '../lib/filters'
 import type { PriceOf } from '../lib/query'
 import { money } from '../lib/format'
+import { useT } from '../i18n'
+import { reducedMotion } from '../a11y/prefs'
 import { setHovered, useHover } from '../state/hoverStore'
 import { Legend } from './Legend'
 import { addHomeLayers, HL, setBubblesVisible, setHomes, setSelected } from './homesLayer'
@@ -79,7 +81,10 @@ export default function MapView({ index, filters, homes, selected, priceOf, onSe
   useEffect(() => {
     onView.current = onViewChange
     onSelect.current = onSelectHome
+    tRef.current = t
   })
+  const t = useT()
+  const tRef = useRef(t)
   const hover = useHover()
   const prevHover = useRef<string | null>(null)
   const band = index?.model.error_overall
@@ -143,7 +148,7 @@ export default function MapView({ index, filters, homes, selected, priceOf, onSe
       if (cl) {
         const src = map.getSource(HL.src) as GeoJSONSource
         src.getClusterExpansionZoom(Number(cl.properties?.cluster_id)).then((z) => {
-          map.easeTo({ center: (cl.geometry as { coordinates: [number, number] }).coordinates, zoom: Math.min(z + 0.5, 16) })
+          map.easeTo({ center: (cl.geometry as { coordinates: [number, number] }).coordinates, zoom: Math.min(z + 0.5, 16), duration: reducedMotion() ? 0 : 500 })
         })
         return
       }
@@ -151,12 +156,13 @@ export default function MapView({ index, filters, homes, selected, priceOf, onSe
       if (!f) return
       const p = f.properties as Record<string, number | string>
       const isZip = f.layer.id === IDS.zipFill
+      const tt = tRef.current
       const lines = isZip
-        ? [`${Number(p.n).toLocaleString()} sales`, `Median ${money(Number(p.m))}`, `Median $${p.p} / sq ft`]
-        : [`${p.n} sales in this hexagon`, p.g ? 'Too few sales for a reliable estimate' : `$${p.p} / sq ft (smoothed)`, `Raw median $${p.r} / sq ft`]
+        ? [tt('popup.sales', { n: Number(p.n).toLocaleString() }), tt('popup.median', { price: money(Number(p.m)) }), tt('popup.medianPpsf', { p: String(p.p) })]
+        : [tt('popup.hex', { n: String(p.n) }), p.g ? tt('popup.few') : tt('popup.smoothed', { p: String(p.p) }), tt('popup.raw', { r: String(p.r) })]
       new Popup({ closeButton: true, maxWidth: '240px' })
         .setLngLat(e.lngLat)
-        .setDOMContent(popupNode(isZip ? `ZIP ${p.z}` : 'Area summary', lines))
+        .setDOMContent(popupNode(isZip ? tt('popup.zip', { z: String(p.z) }) : tt('popup.area'), lines))
         .addTo(map)
     })
     return () => {
@@ -225,7 +231,7 @@ export default function MapView({ index, filters, homes, selected, priceOf, onSe
     if (!ready || !map || !band) return
     setSelected(map, selected, band, priceOf)
     if (selected && !map.getBounds().contains([selected.lon, selected.lat])) {
-      map.easeTo({ center: [selected.lon, selected.lat], zoom: Math.max(map.getZoom(), 14), duration: 600 })
+      map.easeTo({ center: [selected.lon, selected.lat], zoom: Math.max(map.getZoom(), 14), duration: reducedMotion() ? 0 : 600 })
     }
   }, [ready, selected, band, priceOf])
 
@@ -257,16 +263,16 @@ export default function MapView({ index, filters, homes, selected, priceOf, onSe
     const c = map.getCenter()
     const zz = z ?? map.getZoom()
     if (Math.abs(c.lat - ll[0]) > 5e-4 || Math.abs(c.lng - ll[1]) > 5e-4 || Math.abs(map.getZoom() - zz) > 0.02) {
-      map.flyTo({ center: [ll[1], ll[0]], zoom: zz, duration: 700, essential: false })
+      map.flyTo({ center: [ll[1], ll[0]], zoom: zz, duration: reducedMotion() ? 0 : 700, essential: false })
     }
   }, [ready, ll, z])
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-      <div ref={box} role="region" aria-label="Map of King County home sales. The results list is the keyboard-accessible alternative to the markers." style={{ position: 'absolute', inset: 0 }} />
+      <div ref={box} role="region" aria-label={t('map.aria')} style={{ position: 'absolute', inset: 0 }} />
       {failed && (
         <p role="alert" style={{ position: 'absolute', inset: 0, margin: 0, padding: 'var(--s-5)', background: 'var(--bg)' }}>
-          The map could not start (it needs WebGL). The list and filters still work.
+          {t('map.failed')}
         </p>
       )}
       <div className="legend-slot">

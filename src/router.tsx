@@ -1,13 +1,9 @@
 import { createBrowserRouter } from 'react-router'
-import { About } from './routes/About'
-import { Afford } from './routes/Afford'
-import { Compare } from './routes/Compare'
 import { Explore } from './routes/Explore'
-import { HomeDetail } from './routes/HomeDetail'
-import { ZipDetail } from './routes/ZipDetail'
 import { ListPanel } from './routes/ListPanel'
 import { Placeholder } from './routes/Placeholder'
 
+// Everything except the map page is loaded on demand, so the first screen ships only what it needs.
 export const router = createBrowserRouter(
   [
     {
@@ -15,14 +11,14 @@ export const router = createBrowserRouter(
       element: <Explore />,
       children: [
         { index: true, element: <ListPanel /> },
-        { path: 'zip/:zip', element: <ZipDetail /> },
-        { path: 'home/:id', element: <HomeDetail /> },
+        { path: 'zip/:zip', lazy: async () => ({ Component: (await import('./routes/ZipDetail')).ZipDetail }) },
+        { path: 'home/:id', lazy: async () => ({ Component: (await import('./routes/HomeDetail')).HomeDetail }) },
       ],
     },
-    { path: '/compare/:a/:b', element: <Compare /> },
-    { path: '/afford', element: <Afford /> },
-    { path: '/about', element: <About /> },
-    { path: '*', element: <Placeholder title="Page not found" /> },
+    { path: '/compare/:a/:b', lazy: async () => ({ Component: (await import('./routes/Compare')).Compare }) },
+    { path: '/afford', lazy: async () => ({ Component: (await import('./routes/Afford')).Afford }) },
+    { path: '/about', lazy: async () => ({ Component: (await import('./routes/About')).About }) },
+    { path: '*', element: <Placeholder titleKey="notFound" /> },
   ],
   { basename: import.meta.env.BASE_URL },
 )

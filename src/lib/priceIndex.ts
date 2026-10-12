@@ -1,4 +1,5 @@
 import type { Home, PriceIndex } from '../data/types'
+import type { T } from '../i18n'
 import type { PriceOf } from './query'
 
 export type AdjKind = 'none' | 'metro' | 'zip' | 'manual'
@@ -31,10 +32,10 @@ export function makePriceOf(adj: string, pi: PriceIndex | undefined): PriceOf {
   return (h) => h.price * factorFor(h, adj, pi).factor
 }
 
-export function adjSummary(adj: string, pi: PriceIndex | undefined): string {
+export function adjSummary(adj: string, pi: PriceIndex | undefined, t: T): string {
   const a = parseAdj(adj)
-  if (a.kind === 'none' || !pi) return 'Prices as sold in 2014–15'
-  if (a.kind === 'manual') return `Prices × ${a.mult} (your multiplier)`
-  if (a.kind === 'metro') return `Prices in ${pi.metro.asOf} dollars (Seattle Case-Shiller index)`
-  return `Prices in ${pi.metro.asOf} dollars (FHFA ZIP index; Seattle index where unavailable)`
+  if (a.kind === 'none' || !pi) return t('adj.none')
+  if (a.kind === 'manual') return t('adj.manual', { mult: a.mult ?? 1 })
+  if (a.kind === 'metro') return t('adj.metro', { asOf: pi.metro.asOf })
+  return t('adj.zip', { asOf: pi.metro.asOf })
 }

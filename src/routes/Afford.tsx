@@ -3,12 +3,14 @@ import { useNavigate, useSearchParams } from 'react-router'
 import { MortgageCalc } from '../components/MortgageCalc'
 import { PageShell } from '../components/PageShell'
 import { useIndex } from '../data/useIndex'
+import { useT } from '../i18n'
 import { applyFilters, parseFilters } from '../lib/filters'
 import { DEFAULT_LOAN, maxAffordablePrice } from '../lib/finance'
 import { money } from '../lib/format'
 
 export function Afford() {
   const index = useIndex()
+  const t = useT()
   const [params] = useSearchParams()
   const navigate = useNavigate()
   const rate = index.data?.priceIndex.mortgageRate
@@ -27,30 +29,30 @@ export function Afford() {
   }
 
   return (
-    <PageShell title="What can I afford?">
+    <PageShell title={t('afford.title')}>
       {rate ? (
         <>
           <p className="hint">
-            Default interest rate: {rate.pct}%, the {rate.series.replace(/ \(FRED.*/, '')} average for {rate.asOf}. Change anything below.
+            {t('afford.rate', { rate: rate.pct, series: rate.series.replace(/ \(FRED.*/, ''), asOf: rate.asOf })}
           </p>
           <section aria-labelledby="afford-h">
-            <h2 id="afford-h">Price range from your income</h2>
+            <h2 id="afford-h">{t('afford.fromIncome')}</h2>
             <div className="fields">
-              <label className="field"><span>Gross income per year</span><span className="field-input"><input type="number" min={0} step={5000} value={income} onChange={(e) => setIncome(Number(e.target.value))} /><span aria-hidden="true">$</span></span></label>
-              <label className="field"><span>Other debt payments per month</span><span className="field-input"><input type="number" min={0} step={50} value={debts} onChange={(e) => setDebts(Number(e.target.value))} /><span aria-hidden="true">$</span></span></label>
-              <label className="field"><span>Down payment</span><span className="field-input"><input type="number" min={0} max={100} value={down} onChange={(e) => setDown(Number(e.target.value))} /><span aria-hidden="true">%</span></span></label>
+              <label className="field"><span>{t('afford.income')}</span><span className="field-input"><input type="number" min={0} step={5000} value={income} onChange={(e) => setIncome(Number(e.target.value))} /><span aria-hidden="true">$</span></span></label>
+              <label className="field"><span>{t('afford.debts')}</span><span className="field-input"><input type="number" min={0} step={50} value={debts} onChange={(e) => setDebts(Number(e.target.value))} /><span aria-hidden="true">$</span></span></label>
+              <label className="field"><span>{t('afford.down')}</span><span className="field-input"><input type="number" min={0} max={100} value={down} onChange={(e) => setDown(Number(e.target.value))} /><span aria-hidden="true">%</span></span></label>
             </div>
-            <p className="calc-total" aria-live="polite">{money(max)}<span> estimated maximum price</span></p>
-            <p className="hint">Uses the common 28% (housing) and 36% (all debts) of gross income rules. A planning guide, not a loan offer.</p>
-            <button type="button" className="primary" disabled={max <= 0} onClick={showHomes}>Show past sales up to this price (in today’s dollars)</button>
+            <p className="calc-total" aria-live="polite">{money(max)}<span> {t('afford.max')}</span></p>
+            <p className="hint">{t('afford.hint')}</p>
+            <button type="button" className="primary" disabled={max <= 0} onClick={showHomes}>{t('afford.show')}</button>
           </section>
           <section aria-labelledby="calc-h">
-            <h2 id="calc-h">Monthly cost of a specific price</h2>
+            <h2 id="calc-h">{t('afford.specific')}</h2>
             <MortgageCalc price={startPrice} ratePct={rate.pct} />
           </section>
         </>
       ) : (
-        <p>Loading…</p>
+        <p>{t('loading')}</p>
       )}
     </PageShell>
   )

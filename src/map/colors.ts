@@ -1,5 +1,6 @@
 import type { ExpressionSpecification } from 'maplibre-gl'
 import type { MetricKey } from '../lib/filters'
+import type { T } from '../i18n'
 import { priceShort, signedPct } from '../lib/format'
 
 // Diverging: ColorBrewer RdBu (7 classes) with the three middle classes adjusted so neighbours stay at least 17 Delta E
@@ -38,19 +39,13 @@ export function fillColorExpression(m: MetricKey): ExpressionSpecification {
   return ['case', ['==', ['get', 'g'], 1], NO_DATA, step] as unknown as ExpressionSpecification
 }
 
-export const metricTitle: Record<MetricKey, string> = {
-  ppsf: 'Median $ per sq ft',
-  price: 'Median sale price',
-  dev: 'Median sold vs. model estimate',
-}
-
 /** All seven classes, with labels, for the legend. */
-export function legendItems(m: MetricKey): { color: string; label: string }[] {
+export function legendItems(m: MetricKey, t: T): { color: string; label: string }[] {
   const b = BREAKS[m]
   const fmt = m === 'ppsf' ? (v: number) => `$${v}` : m === 'price' ? priceShort : (v: number) => signedPct(v)
   return palette(m).map((color, i) => {
     const label =
-      i === 0 ? `< ${fmt(b[0])}` : i === b.length ? `≥ ${fmt(b[i - 1])}` : `${fmt(b[i - 1])} to ${fmt(b[i])}`
+      i === 0 ? `< ${fmt(b[0])}` : i === b.length ? `≥ ${fmt(b[i - 1])}` : t('legend.range', { a: fmt(b[i - 1]), b: fmt(b[i]) })
     return { color, label }
   })
 }

@@ -2,6 +2,8 @@ import { lazy, Suspense, useCallback, useMemo, useState } from 'react'
 import { Link, Outlet, useLocation, useMatch, useNavigate } from 'react-router'
 import { DisclaimerBanner } from '../components/DisclaimerBanner'
 import { FilterBar } from '../components/FilterBar'
+import { SiteTools } from '../components/SiteTools'
+import { useT } from '../i18n'
 import type { Home, IndexData } from '../data/types'
 import { useHome } from '../data/useHome'
 import { useIndex } from '../data/useIndex'
@@ -37,6 +39,7 @@ export function Explore() {
   const [filters, setFilters] = useFilters()
   const index = useIndex()
   const navigate = useNavigate()
+  const t = useT()
   const { pathname, search } = useLocation()
   const [view, setView] = useState<ViewState | null>(null)
 
@@ -77,23 +80,24 @@ export function Explore() {
 
   return (
     <div className="explore" data-view={filters.view} data-detail={detail}>
-      <a className="skip-link" href="#panel">Skip to results</a>
+      <a className="skip-link" href="#panel">{t('skip')}</a>
       <header className="topbar">
-        <h1 className="sr-only">Seattle Home Value Finder: King County home sales, 2014–2015</h1>
-        <Link to={{ pathname: '/', search }} className="brand" aria-label="Seattle Home Value Finder, home">Seattle Home Value Finder</Link>
-        <nav className="topnav" aria-label="Site">
-          <Link to={{ pathname: '/afford', search }}>Affordability</Link>
-          <Link to="/about">About</Link>
+        <h1 className="sr-only">{t('h1')}</h1>
+        <Link to={{ pathname: '/', search }} className="brand" aria-label={t('brand.home')}>Seattle Home Value Finder</Link>
+        <nav className="topnav" aria-label={t('nav.site')}>
+          <Link to={{ pathname: '/afford', search }}>{t('nav.afford')}</Link>
+          <Link to={{ pathname: '/about', search }}>{t('nav.about')}</Link>
+          <SiteTools />
         </nav>
       </header>
       <DisclaimerBanner range={index.data?.dataRange} />
       <main className="split">
-        <section id="panel" className="panel" aria-label="Results" tabIndex={-1}>
+        <section id="panel" className="panel" aria-label={t('panel.results')} tabIndex={-1}>
           {!detail && <FilterBar filters={filters} index={index.data} onChange={(patch) => setFilters(patch)} />}
           <Outlet context={ctx} />
         </section>
-        <section className="mapwrap" aria-label="Map and legend">
-          <Suspense fallback={<p style={{ padding: 'var(--s-5)' }}>Loading map…</p>}>
+        <section className="mapwrap" aria-label={t('map.region')}>
+          <Suspense fallback={<p style={{ padding: 'var(--s-5)' }}>{t('map.loading')}</p>}>
             <MapView index={index.data} filters={filters} homes={filtered} priceOf={priceOf} selected={selected} onSelectHome={onSelectHome} onViewChange={onViewChange} />
           </Suspense>
           <div className="mapctl">
@@ -101,9 +105,9 @@ export function Explore() {
           </div>
         </section>
       </main>
-      <nav className="viewtoggle" aria-label="Show list or map">
-        <button type="button" aria-pressed={filters.view === 'list'} onClick={() => setFilters({ view: 'list' })}>List</button>
-        <button type="button" aria-pressed={filters.view === 'map'} onClick={() => setFilters({ view: 'map' })}>Map</button>
+      <nav className="viewtoggle" aria-label={t('view.toggle')}>
+        <button type="button" aria-pressed={filters.view === 'list'} onClick={() => setFilters({ view: 'list' })}>{t('view.list')}</button>
+        <button type="button" aria-pressed={filters.view === 'map'} onClick={() => setFilters({ view: 'map' })}>{t('view.map')}</button>
       </nav>
     </div>
   )
