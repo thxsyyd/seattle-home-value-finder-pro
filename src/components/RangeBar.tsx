@@ -21,9 +21,9 @@ export function RangeBar({ dev, band }: { dev: number; band: IndexData['model'][
         <span className={`rbar-dot rbar-${tone}${g.clamped ? ' clamped' : ''}`} style={{ left: `${g.marker}%` }} />
       </div>
       <div className="rbar-axis" aria-hidden="true">
-        <span>−50%</span>
+        <span>{t('card.axisLow')}</span>
         <span>{t('card.estimate')}</span>
-        <span>+50%</span>
+        <span>{t('card.axisHigh')}</span>
       </div>
     </div>
   )

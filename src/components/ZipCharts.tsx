@@ -28,6 +28,7 @@ export default function ZipCharts({ series }: { series: Series[] }) {
   return (
     <>
       <h2 className="chart-h">{t('charts.prices')}</h2>
+      <p className="hint">{t('charts.pricesHint')}</p>
       <div className="chart-box" role="img" aria-label={t('charts.barAria')}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
@@ -41,6 +42,7 @@ export default function ZipCharts({ series }: { series: Series[] }) {
         </ResponsiveContainer>
       </div>
       <h2 className="chart-h">{t('charts.size')}</h2>
+      <p className="hint">{t('charts.sizeHint')}</p>
       <div className="chart-box" role="img" aria-label={t('charts.scatterAria')}>
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>

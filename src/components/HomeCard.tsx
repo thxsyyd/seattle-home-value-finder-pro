@@ -13,22 +13,25 @@ interface Props {
   hovered: boolean
   /** price shown (as sold, or restated to today's dollars) */
   price?: number
+  /** the sale restated in today's dollars; shown as a quiet second line */
+  today?: number
   /** hide the "Possibly undervalued" badge when the whole list already is (it would say the same on every card) */
   hideUnderBadge?: boolean
   style?: CSSProperties
 }
 
 /** A sale as a card: where it sold against the model estimate, then the facts. No photo exists, so the bar stands in. */
-export const HomeCard = memo(function HomeCard({ home: h, band, hovered, price, hideUnderBadge, style }: Props) {
+export const HomeCard = memo(function HomeCard({ home: h, band, hovered, price, today, hideUnderBadge, style }: Props) {
   const t = useT()
   const lang = useLang()
   const d = describeDev(h.dev, band, t)
   const shown = price ?? h.price
   const sold = new Date(h.date).toLocaleDateString(lang === 'zh' ? 'zh-CN' : 'en-US', { month: 'short', year: 'numeric' })
-  const devShort = d.tone === 'below' ? t('card.below', { n: Math.round(-h.dev * 100) }) : d.tone === 'above' ? t('card.above', { n: Math.round(h.dev * 100) }) : `≈ ${Math.round(h.dev * 100)}%`
+  const devShort = d.tone === 'below' ? t('card.below', { n: Math.round(-h.dev * 100) }) : d.tone === 'above' ? t('card.above', { n: Math.round(h.dev * 100) }) : `${h.dev < 0 ? '−' : '+'}${Math.abs(Math.round(h.dev * 100))}%`
   return (
     <SearchLink
       to={`/home/${h.key}`}
+      state={{ from: { kind: 'results' } }}
       className={`card${hovered ? ' is-hover' : ''}`}
       data-key={h.key}
       style={style}
@@ -52,6 +55,7 @@ export const HomeCard = memo(function HomeCard({ home: h, band, hovered, price, 
         {price !== undefined && Math.round(price) !== h.price && <span className="was"> {t('card.was', { price: money(h.price) })}</span>}
         <span className="card-est"> · {t('card.estimateVal', { price: money(h.pred) })}</span>
       </div>
+      {today !== undefined && <div className="card-sub">{t('card.today', { price: money(Math.round(today / 1000) * 1000) })}</div>}
     </SearchLink>
   )
 })

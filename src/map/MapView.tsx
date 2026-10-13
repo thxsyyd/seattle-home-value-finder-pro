@@ -14,7 +14,7 @@ import { reducedMotion } from '../a11y/prefs'
 import { setHovered, useHover } from '../state/hoverStore'
 import { Legend } from './Legend'
 import { applyQuietStyle } from './quietStyle'
-import { addHomeLayers, HL, setHomes, setHoveredPill, setSelected, setViewedPills } from './homesLayer'
+import { addHomeLayers, HL, setHomes, setHoveredPill, setSelected, setSimilar, setViewedPills } from './homesLayer'
 import { DEFAULT_VIEW, webglSupported } from './view'
 import { addRegionLayers, IDS, setLayerMode, setMetric, setSourceData } from './layers'
 
@@ -43,6 +43,8 @@ interface Props {
   selected: Home | null
   /** keys of the sales currently shown as cards, best first */
   listed: string[]
+  /** the five sales most like the opened one, ringed on the map */
+  similar: Home[]
   priceOf: PriceOf
   onSelectHome: (key: string) => void
   /** `persist` is false for the initial load, so merely opening the page doesn't rewrite the URL */
@@ -70,7 +72,7 @@ function popupNode(title: string, lines: string[]): HTMLElement {
   return el
 }
 
-export default function MapView({ index, filters, homes, selected, listed, priceOf, onSelectHome, onViewChange }: Props) {
+export default function MapView({ index, filters, homes, selected, listed, similar, priceOf, onSelectHome, onViewChange }: Props) {
   const box = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MlMap | null>(null)
   const [ready, setReady] = useState(false)
@@ -134,7 +136,7 @@ export default function MapView({ index, filters, homes, selected, listed, price
     })
 
     const areas = [IDS.hex7Fill, IDS.hex8Fill, IDS.zipFill]
-    const markers = [HL.pillsHover, HL.pills, HL.pillsViewed, HL.dots]
+    const markers = [HL.pillsHover, HL.pills, HL.pillsViewed, HL.dots, HL.simRing]
     const present = (ids: string[]) => ids.filter((id) => map.getLayer(id))
     map.on('mousemove', (e) => {
       const m = map.queryRenderedFeatures(e.point, { layers: present(markers) })[0]
@@ -224,6 +226,12 @@ export default function MapView({ index, filters, homes, selected, listed, price
       map.easeTo({ center: [selected.lon, selected.lat], zoom: Math.max(map.getZoom(), 14), duration: reducedMotion() ? 0 : 600 })
     }
   }, [ready, selected, band, priceOf])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!ready || !map || !band) return
+    setSimilar(map, similar, band, priceOf)
+  }, [ready, similar, band, priceOf])
 
   // opened sales turn their pill pale grey
   const viewed = useRef<string[]>([])

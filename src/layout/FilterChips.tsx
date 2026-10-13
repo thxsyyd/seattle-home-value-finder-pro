@@ -23,9 +23,9 @@ export function FilterChips({ filters: f, index, count, onChange }: Props) {
       <button type="button" className="chip" aria-haspopup="dialog" onClick={() => modal.current?.showModal()}>
         <Icon name="filters" /> {t('filters.title')}{n > 0 && <span className="badge-n">{n}</span>}
       </button>
-      <button type="button" className="chip" aria-pressed={f.show === 'under' && f.dv === undefined} onClick={() => onChange({ show: f.show === 'under' ? 'all' : 'under', dv: undefined })}>{t('show.under')}</button>
-      <button type="button" className="chip" aria-pressed={!!f.wf} onClick={() => onChange({ wf: f.wf ? undefined : true })}>{t('chip.waterfront')}</button>
-      <button type="button" className="chip" aria-pressed={parseAdj(f.adj).kind !== 'none'} onClick={() => onChange({ adj: parseAdj(f.adj).kind === 'none' ? 'metro' : 'none' })}>{t('chip.today')}</button>
+      <button type="button" className="chip" title={t('show.under.tip')} aria-pressed={f.show === 'under' && f.dv === undefined} onClick={() => onChange({ show: f.show === 'under' ? 'all' : 'under', dv: undefined })}>{t('show.under')}</button>
+      <button type="button" className="chip" title={t('chip.waterfront.tip')} aria-pressed={!!f.wf} onClick={() => onChange({ wf: f.wf ? undefined : true })}>{t('chip.waterfront')}</button>
+      <button type="button" className="chip" title={t('chip.today.tip')} aria-pressed={parseAdj(f.adj).kind !== 'none'} onClick={() => onChange({ adj: parseAdj(f.adj).kind === 'none' ? 'metro' : 'none' })}>{t('chip.today')}</button>
       <FilterModal ref={modal} filters={f} index={index} count={count} onChange={onChange} />
     </section>
   )

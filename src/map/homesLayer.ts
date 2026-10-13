@@ -8,10 +8,11 @@ import { addBubbleIcons, PILL } from './bubbleIcon'
 export const TONE = { below: '#2166ac', above: '#b2182b', near: '#8a8a8a', ink: '#222222' } as const
 
 export const HL = {
-  src: 'homes', selSrc: 'selected-home',
+  src: 'homes', selSrc: 'selected-home', simSrc: 'similar-homes',
   dotShadow: 'homes-dot-shadow', dots: 'homes-dots',
   pills: 'homes-pills', pillsViewed: 'homes-pills-viewed', pillsHover: 'homes-pills-hover',
   selRing: 'selected-ring', selPill: 'selected-pill',
+  simRing: 'similar-ring', simHover: 'similar-ring-hover',
 } as const
 
 const BEFORE_LABELS = 'waterway_line_label' // keep place labels above the markers
@@ -33,6 +34,7 @@ export function addHomeLayers(map: MlMap): void {
   addBubbleIcons(map)
   map.addSource(HL.src, { type: 'geojson', data: empty as never, promoteId: 'key' })
   map.addSource(HL.selSrc, { type: 'geojson', data: empty as never })
+  map.addSource(HL.simSrc, { type: 'geojson', data: empty as never, promoteId: 'key' })
 
   // 1. every sale is a dot, so nothing is ever hidden
   map.addLayer({
@@ -68,7 +70,17 @@ export function addHomeLayers(map: MlMap): void {
     paint: { 'text-color': '#ffffff' },
   }, BEFORE_LABELS)
 
-  // 3. the opened sale: dark ring plus a dark pill, always drawn
+  // 3a. the five sales most like the opened one: a grey ring each, darker while hovered in the list
+  map.addLayer({
+    id: HL.simRing, type: 'circle', source: HL.simSrc,
+    paint: { 'circle-radius': 9, 'circle-color': 'rgba(0,0,0,0)', 'circle-stroke-color': '#717171', 'circle-stroke-width': 2 },
+  }, BEFORE_LABELS)
+  map.addLayer({
+    id: HL.simHover, type: 'circle', source: HL.simSrc, filter: noneKey,
+    paint: { 'circle-radius': 11, 'circle-color': 'rgba(34,34,34,0.12)', 'circle-stroke-color': TONE.ink, 'circle-stroke-width': 3 },
+  }, BEFORE_LABELS)
+
+  // 3b. the opened sale: dark ring plus a dark pill, always drawn
   map.addLayer({
     id: HL.selRing, type: 'circle', source: HL.selSrc,
     paint: { 'circle-radius': 12, 'circle-color': 'rgba(34,34,34,0.12)', 'circle-stroke-color': TONE.ink, 'circle-stroke-width': 3 },
@@ -114,9 +126,15 @@ export function setSelected(map: MlMap, h: Home | null, band: Band, priceOf: Pri
   ;(map.getSource(HL.selSrc) as GeoJSONSource | undefined)?.setData(data as never)
 }
 
+export function setSimilar(map: MlMap, homes: Home[], band: Band, priceOf: PriceOf): void {
+  const data = { type: 'FeatureCollection', features: homes.map((h) => point(h, { key: h.key, ...labelFor(h, band, priceOf) })) }
+  ;(map.getSource(HL.simSrc) as GeoJSONSource | undefined)?.setData(data as never)
+}
+
 /** The pill drawn dark while its card (or the pill itself) is hovered. */
 export function setHoveredPill(map: MlMap, key: string | null): void {
   if (map.getLayer(HL.pillsHover)) map.setFilter(HL.pillsHover, key ? ['==', ['get', 'key'], key] : noneKey)
+  if (map.getLayer(HL.simHover)) map.setFilter(HL.simHover, key ? ['==', ['get', 'key'], key] : noneKey)
 }
 
 /** Pills of sales that have already been opened turn pale grey. */

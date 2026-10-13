@@ -52,9 +52,21 @@ function ZipCompare({ a, b, index, t }: { a: string; b: string; index: IndexData
 }
 
 function HomeCompare({ a, b, index, t }: { a?: string; b?: string; index: IndexData; t: T }) {
-  const ha = useHome(a, index).data
-  const hb = useHome(b, index).data
+  const ra = useHome(a, index)
+  const rb = useHome(b, index)
+  const ha = ra.data
+  const hb = rb.data
+  if (ra.status === 'loading' || rb.status === 'loading') return <p>{t('loading')}</p>
   if (!ha || !hb) return <p>{t('compare.homeMissing')}</p>
+  const dSize = hb.sqft - ha.sqft
+  const dPrice = hb.price - ha.price
+  const dPpsf = Math.round(hb.price / hb.sqft) - Math.round(ha.price / ha.sqft)
+  const more = (d: number, fmt: (n: number) => string) => (d === 0 ? t('compare.same') : t(d > 0 ? 'compare.more' : 'compare.less', { n: fmt(Math.abs(d)) }))
+  const summary = t('compare.summary', {
+    size: dSize === 0 ? t('compare.sameSize') : t(dSize > 0 ? 'compare.bigger' : 'compare.smaller', { n: Math.abs(dSize).toLocaleString() }),
+    price: more(dPrice, money),
+    ppsf: more(dPpsf, (n) => `$${n}`),
+  })
   const rows: [string, (h: Home) => string][] = [
     [t('compare.soldPrice'), (h) => money(h.price)],
     [t('home.estimate'), (h) => money(h.pred)],
@@ -66,14 +78,17 @@ function HomeCompare({ a, b, index, t }: { a?: string; b?: string; index: IndexD
     [t('sort.ppsf'), (h) => `$${Math.round(h.price / h.sqft)}`],
     [t('home.lot'), (h) => t('compare.sqft', { n: h.lot.toLocaleString() })],
     [t('home.built'), (h) => (h.yearReno ? t('home.renovated', { y: h.yearBuilt, r: h.yearReno }) : String(h.yearBuilt))],
-    [t('home.grade'), (h) => t('compare.gradeVal', { g: h.grade, c: h.condition })],
+    [t('compare.gradeCond'), (h) => t('compare.gradeVal', { g: h.grade, c: h.condition })],
     [t('compare.wfView'), (h) => `${h.waterfront ? t('yes') : t('no')} / ${h.view}`],
   ]
   return (
-    <table>
-      <thead><tr><th scope="col">{t('compare.measure')}</th><th scope="col" className="num"><SearchLink to={`/home/${ha.key}`}>{t('compare.homeA')}</SearchLink></th><th scope="col" className="num"><SearchLink to={`/home/${hb.key}`}>{t('compare.homeB')}</SearchLink></th></tr></thead>
-      <tbody>{rows.map(([k, f]) => <tr key={k}><th scope="row">{k}</th><td className="num">{f(ha)}</td><td className="num">{f(hb)}</td></tr>)}</tbody>
-    </table>
+    <>
+      <p className="verdict verdict-near">{summary}</p>
+      <table>
+        <thead><tr><th scope="col">{t('compare.measure')}</th><th scope="col" className="num"><SearchLink to={`/home/${ha.key}`}>{t('compare.homeA')}</SearchLink></th><th scope="col" className="num"><SearchLink to={`/home/${hb.key}`}>{t('compare.homeB')}</SearchLink></th></tr></thead>
+        <tbody>{rows.map(([k, f]) => <tr key={k}><th scope="row">{k}</th><td className="num">{f(ha)}</td><td className="num">{f(hb)}</td></tr>)}</tbody>
+      </table>
+    </>
   )
 }
 

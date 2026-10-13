@@ -16,8 +16,8 @@ export function Header() {
       </Link>
       <SearchPill />
       <nav className="hdr-right" aria-label={t('nav.tools')}>
-        <Link className="hdr-link only-desktop" to={{ pathname: '/afford', search }}>{t('nav.afford')}</Link>
-        <Link className="hdr-link only-desktop" to={{ pathname: '/compare', search }}>{t('nav.compare')}</Link>
+        <Link className="hdr-link only-desktop" to={{ pathname: '/afford', search }} title={t('nav.afford.tip')}>{t('nav.afford')}</Link>
+        <Link className="hdr-link only-desktop" to={{ pathname: '/compare', search }} title={t('nav.compare.tip')}>{t('nav.compare')}</Link>
         <MenuPopover />
       </nav>
     </header>

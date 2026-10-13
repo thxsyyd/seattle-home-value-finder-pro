@@ -18,7 +18,7 @@ export function Splitter({ container, value, onChange }: Props) {
   const dragging = useRef(false)
 
   const total = () => container.current?.getBoundingClientRect().width ?? 1200
-  const current = () => value ?? Math.round(total() * 0.54)
+  const current = () => value ?? Math.round(container.current?.querySelector('.panel')?.getBoundingClientRect().width ?? total() * 0.34)
 
   const move = (e: PointerEvent) => {
     const rect = container.current?.getBoundingClientRect()

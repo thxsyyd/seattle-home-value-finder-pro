@@ -1,29 +1,31 @@
-import { lazy, Suspense, useCallback, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { Outlet, useLocation, useMatch, useNavigate } from 'react-router'
 import { DisclaimerBanner } from '../components/DisclaimerBanner'
 import { FilterChips } from '../layout/FilterChips'
 import { useT } from '../i18n'
 import type { Home, IndexData } from '../data/types'
-import { useHome } from '../data/useHome'
+import { useHome, useSimilar } from '../data/useHome'
 import { useIndex } from '../data/useIndex'
 import { useViewportHomes } from '../data/useViewportHomes'
+import { homeLabel } from '../lib/backTarget'
 import { viewBbox } from '../lib/geo'
+import { DEFAULT_PANEL, pageSizeFor, stepFor } from '../lib/split'
+import { useColumns } from '../lib/useColumns'
 import { makePriceOf } from '../lib/priceIndex'
 import { filterHomes, inBbox, sortHomes, type PriceOf } from '../lib/query'
 import { Splitter } from '../components/Splitter'
 import { LayersButton } from '../map/LayersButton'
 import type { ViewState } from '../map/MapView'
 import { DEFAULT_VIEW } from '../map/view'
+import { listMemory } from '../state/listMemory'
 import { useFilters } from '../state/useFilters'
 
+const NO_HOMES: Home[] = []
 const MapView = lazy(() => import('../map/MapView'))
 
 /** Below this zoom a viewport spans too many ZIPs to list individual sales. */
 export const MIN_LIST_ZOOM = 10.5
 
-/** The list opens with this many best matches for the map area; "Show more" adds STEP at a time. */
-export const PAGE = 4
-export const STEP = 8
 const PANEL_KEY = 'hvf.panelw'
 
 function readPanelWidth(): number | null {
@@ -46,6 +48,8 @@ export interface ExploreContext {
   listed: Home[]
   shown: number
   showMore: () => void
+  /** how many more cards "Show more" adds (whole rows) */
+  step: number
   loading: boolean
   zoomedIn: boolean
   /** price used for display, filtering and sorting (as sold, or restated to today's dollars) */
@@ -81,11 +85,15 @@ export function Explore() {
     [filtered, bbox, f.sort, f.follow, priceOf],
   )
 
-  // Cards show only the best matches for the current map area; panning or zooming, or changing a filter or the sort, starts again at PAGE.
+  // Cards show only the best matches for the current map area; panning or zooming, or changing a filter or the sort, starts again at the first page.
   const sig = JSON.stringify([bbox.map((n) => Math.round(n * 1000)), filterKey, f.sort, f.show, f.adj, f.follow])
-  const [more, setMore] = useState({ sig: '', n: PAGE })
-  const shown = more.sig === sig ? more.n : PAGE
-  const showMore = useCallback(() => setMore({ sig, n: shown + STEP }), [sig, shown])
+  const panelRef = useRef<HTMLElement>(null)
+  const cols = useColumns(panelRef)
+  const page = pageSizeFor(cols)
+  const step = stepFor(cols)
+  const [more, setMore] = useState({ sig: '', n: page })
+  const shown = more.sig === `${sig}|${page}` ? more.n : page
+  const showMore = useCallback(() => setMore({ sig: `${sig}|${page}`, n: shown + step }), [sig, page, shown, step])
   const listed = useMemo(() => rows.slice(0, shown), [rows, shown])
   const listedKeys = useMemo(() => listed.map((h) => h.key), [listed])
 
@@ -105,6 +113,11 @@ export function Explore() {
 
   const homeMatch = useMatch('/home/:id')
   const selected = useHome(homeMatch?.params.id, index.data).data ?? null
+  const similar = useSimilar(selected, index.data).data
+  // a different map area or filter makes a different list, so it starts from the top again
+  useEffect(() => {
+    listMemory.scrollTop = 0
+  }, [sig])
 
   const onViewChange = useCallback(
     (v: ViewState, persist: boolean) => {
@@ -113,24 +126,27 @@ export function Explore() {
     },
     [setFilters],
   )
-  const onSelectHome = useCallback((key: string) => navigate({ pathname: `/home/${key}`, search }), [navigate, search])
+  const onSelectHome = useCallback(
+    (key: string) => navigate({ pathname: `/home/${key}`, search }, { state: { from: selected ? { kind: 'home', label: homeLabel(selected.price, selected.zip) } : { kind: 'results' } } }),
+    [navigate, search, selected],
+  )
 
   const detail = pathname !== '/'
-  const ctx: ExploreContext = { index: index.data, view, filtered, rows, listed, shown, showMore, loading, zoomedIn, priceOf }
+  const ctx: ExploreContext = { index: index.data, view, filtered, rows, listed, shown, showMore, step, loading, zoomedIn, priceOf }
 
   return (
     <div className="explore" data-view={filters.view} data-detail={detail}>
       <FilterChips filters={filters} index={index.data} count={rows.length} onChange={(patch) => setFilters(patch)} />
       <DisclaimerBanner range={index.data?.dataRange} />
-      <main className="split" ref={splitRef} style={{ '--panel-w': panelW ? `${panelW}px` : '54%' } as CSSProperties}>
+      <main className="split" ref={splitRef} style={{ '--panel-w': panelW ? `${panelW}px` : DEFAULT_PANEL } as CSSProperties}>
         <h1 className="sr-only">{t('h1')}</h1>
-        <section id="main-content" className="panel" aria-label={t('panel.results')} tabIndex={-1}>
+        <section id="main-content" ref={panelRef} className="panel" aria-label={t('panel.results')} tabIndex={-1}>
           <Outlet context={ctx} />
         </section>
         <Splitter container={splitRef} value={panelW} onChange={onPanelWidth} />
         <section className="mapwrap" aria-label={t('map.region')}>
           <Suspense fallback={<p style={{ padding: 'var(--s-5)' }}>{t('map.loading')}</p>}>
-            <MapView index={index.data} filters={filters} homes={filtered} listed={listedKeys} priceOf={priceOf} selected={selected} onSelectHome={onSelectHome} onViewChange={onViewChange} />
+            <MapView index={index.data} filters={filters} homes={filtered} listed={listedKeys} similar={similar ?? NO_HOMES} priceOf={priceOf} selected={selected} onSelectHome={onSelectHome} onViewChange={onViewChange} />
           </Suspense>
           <LayersButton />
           <label className="mapfollow">

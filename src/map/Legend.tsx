@@ -7,7 +7,7 @@ import { TONE } from './homesLayer'
 /** Bottom-left key. Dots are always explained; the area scale is added only while an area layer is on. */
 export function Legend({ metric, layer }: { metric: MetricKey; layer: LayerKey }) {
   const t = useT()
-  const [open, setOpen] = useState(() => typeof matchMedia === 'function' && matchMedia('(min-width: 768px)').matches)
+  const [open, setOpen] = useState(false)
   const areas = layer !== 'none'
   const title = areas ? t(`legend.${metric}`) : t('legend.dots')
   const dots: [string, string, string][] = [
@@ -19,6 +19,11 @@ export function Legend({ metric, layer }: { metric: MetricKey; layer: LayerKey }
     <figure aria-label={t('legend.aria', { title })} className="legend">
       <figcaption>
         <button type="button" className="legend-toggle" aria-expanded={open} onClick={() => setOpen(!open)}>
+          {!open && (
+            <span className="legend-dots" aria-hidden="true">
+              {dots.map(([color]) => <span key={color} className="dot" style={{ background: color }} />)}
+            </span>
+          )}
           {t('legend.dots')} <span aria-hidden="true">{open ? '▾' : '▸'}</span>
         </button>
       </figcaption>

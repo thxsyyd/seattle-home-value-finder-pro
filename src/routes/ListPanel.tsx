@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router'
 import { DebugPanel } from '../components/DebugPanel'
 import { useT } from '../i18n'
@@ -6,11 +6,42 @@ import { HomeCard } from '../components/HomeCard'
 import { money } from '../lib/format'
 import type { SortKey } from '../lib/filters'
 import { useHover } from '../state/hoverStore'
+import { listMemory } from '../state/listMemory'
 import { useFilters } from '../state/useFilters'
-import { STEP, type ExploreContext } from './Explore'
+import { makePriceOf, parseAdj } from '../lib/priceIndex'
+import type { ExploreContext } from './Explore'
+
+const INTRO_KEY = 'hvf.intro'
+
+/** A one-time, dismissible line that says what this page is for. */
+function Intro() {
+  const t = useT()
+  const [open, setOpen] = useState(() => {
+    try {
+      return localStorage.getItem(INTRO_KEY) !== 'seen'
+    } catch {
+      return true
+    }
+  })
+  if (!open) return null
+  const close = () => {
+    setOpen(false)
+    try {
+      localStorage.setItem(INTRO_KEY, 'seen')
+    } catch {
+      /* ignore */
+    }
+  }
+  return (
+    <div className="intro">
+      <p>{t('intro.text')}</p>
+      <button type="button" className="secondary" onClick={close}>{t('intro.close')}</button>
+    </div>
+  )
+}
 
 export function ListPanel() {
-  const { index, rows, listed, shown, showMore, loading, zoomedIn, priceOf } = useOutletContext<ExploreContext>()
+  const { index, rows, listed, shown, showMore, step, loading, zoomedIn, priceOf } = useOutletContext<ExploreContext>()
   const [f, setFilters] = useFilters()
   const [params] = useSearchParams()
   const hover = useHover()
@@ -21,15 +52,31 @@ export function ListPanel() {
     document.querySelector(`.card[data-key="${CSS.escape(hover.key)}"]`)?.scrollIntoView({ block: 'nearest' })
   }, [hover.key, hover.source])
 
+  const scroller = useRef<HTMLDivElement>(null)
+  // coming back from a home: restore the scroll position and give its card focus again
+  useLayoutEffect(() => {
+    if (scroller.current) scroller.current.scrollTop = listMemory.scrollTop
+    const key = listMemory.opened
+    listMemory.opened = null
+    if (key) document.querySelector<HTMLElement>(`.card[data-key="${CSS.escape(key)}"]`)?.focus({ preventScroll: true })
+  }, [])
+
   const band = index?.model.error_overall
+  // today's price, shown as a second line on cards when the prices themselves are as sold
+  const todayOf = useMemo(() => (parseAdj(f.adj).kind === 'none' ? makePriceOf('metro', index?.priceIndex) : undefined), [f.adj, index?.priceIndex])
 
   return (
     <>
+      {zoomedIn && <Intro />}
       <div className="results-head">
         <h2 className="results-title" aria-live="polite">
           {!zoomedIn ? t('list.zoom') : loading && rows.length === 0 ? t('loading') : t(f.show === 'under' && f.dv === undefined ? 'results.under' : 'results.all', { n: rows.length.toLocaleString() })}
         </h2>
         <p className="results-sub">{t(f.show === 'under' && f.dv === undefined ? 'results.subUnder' : 'results.subAll')}</p>
+        <details className="explain">
+          <summary>{t('explain.q')}</summary>
+          <p>{t('explain.a')}</p>
+        </details>
         <label className="sortbox">
           {t('sort.label')}{' '}
           <select value={f.sort} onChange={(e) => setFilters({ sort: e.target.value as SortKey })}>
@@ -41,7 +88,7 @@ export function ListPanel() {
           </select>
         </label>
       </div>
-      <div className="list-scroll">
+      <div ref={scroller} className="list-scroll" onScroll={(e) => { listMemory.scrollTop = e.currentTarget.scrollTop }}>
         {!zoomedIn && index && (
           <ol style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {[...index.zips].sort((a, b) => a.zip.localeCompare(b.zip)).map((z) => (
@@ -68,14 +115,14 @@ export function ListPanel() {
             <ol className="grid cards">
               {listed.map((h) => (
                 <li key={h.key}>
-                  <HomeCard home={h} band={band} hovered={hover.key === h.key} price={priceOf(h)} hideUnderBadge={f.show === 'under' && f.dv === undefined} />
+                  <HomeCard home={h} band={band} hovered={hover.key === h.key} price={priceOf(h)} today={todayOf?.(h)} hideUnderBadge={f.show === 'under' && f.dv === undefined} />
                 </li>
               ))}
             </ol>
             <div className="more-row">
               <p className="hint">{t(f.follow ? 'list.showing' : 'list.showingAll', { shown: listed.length, total: rows.length.toLocaleString() })}</p>
               {rows.length > shown && (
-                <button type="button" className="secondary" onClick={showMore}>{t('list.more', { n: Math.min(STEP, rows.length - shown) })}</button>
+                <button type="button" className="secondary" onClick={showMore}>{t('list.more', { n: Math.min(step, rows.length - shown) })}</button>
               )}
             </div>
           </>

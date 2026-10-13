@@ -35,6 +35,7 @@ export function ZipDetail() {
             <dt>{t('zip.dev')}</dt><dd>{signedPct(row.medDev, 1)}</dd>
             <dt>{t('zip.below')}</dt><dd>{t('zip.belowVal', { p: Math.round(row.pctBelow * 100) })}</dd>
           </dl>
+          <p className="hint">{t('zip.explain')}</p>
           <p style={{ display: 'flex', gap: 'var(--s-2)', flexWrap: 'wrap', alignItems: 'center' }}>
             <button type="button" className="secondary" onClick={() => setFilters({ ll: [row.centroid[1], row.centroid[0]], z: 12.5 })}>{t('zip.show')}</button>
             <label>
