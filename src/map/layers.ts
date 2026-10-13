@@ -50,10 +50,9 @@ export function setMetric(map: MlMap, metric: MetricKey): void {
 }
 
 export function setLayerMode(map: MlMap, layer: LayerKey): void {
-  const showZips = layer === 'zip'
   const vis = (on: boolean) => (on ? 'visible' : 'none')
-  for (const id of [IDS.hex7Fill, IDS.hex8Fill, IDS.hexLine, IDS.hexGrey]) map.setLayoutProperty(id, 'visibility', vis(!showZips))
-  for (const id of [IDS.zipFill, IDS.zipLine]) map.setLayoutProperty(id, 'visibility', vis(showZips))
+  for (const id of [IDS.hex7Fill, IDS.hex8Fill, IDS.hexLine, IDS.hexGrey]) map.setLayoutProperty(id, 'visibility', vis(layer === 'hex'))
+  for (const id of [IDS.zipFill, IDS.zipLine]) map.setLayoutProperty(id, 'visibility', vis(layer === 'zip'))
 }
 
 export { NO_DATA }

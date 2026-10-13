@@ -18,7 +18,6 @@ export const BREAKS: Record<MetricKey, number[]> = {
   dev: [-0.06, -0.03, -0.01, 0.01, 0.03, 0.06],
 }
 
-export const HOME_DEV_BREAKS = [-0.3, -0.15, -0.05, 0.05, 0.15, 0.3]
 
 /** GeoJSON property that carries each metric (same short keys on hexagons and joined zip polygons). */
 export const PROP: Record<MetricKey, string> = { ppsf: 'p', price: 'm', dev: 'd' }

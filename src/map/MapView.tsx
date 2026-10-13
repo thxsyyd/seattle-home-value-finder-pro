@@ -1,4 +1,4 @@
-import { Map as MlMap, NavigationControl, Popup, setWorkerUrl, type GeoJSONSource } from 'maplibre-gl'
+import { Map as MlMap, NavigationControl, Popup, setWorkerUrl } from 'maplibre-gl'
 // MapLibre derives its worker URL from import.meta.url at run time, which bundlers can't see, so the
 // production build would not ship the worker. Import it as an asset and point MapLibre at it.
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?url'
@@ -14,15 +14,13 @@ import { reducedMotion } from '../a11y/prefs'
 import { setHovered, useHover } from '../state/hoverStore'
 import { Legend } from './Legend'
 import { applyQuietStyle } from './quietStyle'
-import { addHomeLayers, HL, setBubblesVisible, setHomes, setSelected } from './homesLayer'
+import { addHomeLayers, HL, setHomes, setHoveredPill, setSelected, setViewedPills } from './homesLayer'
 import { DEFAULT_VIEW, webglSupported } from './view'
 import { addRegionLayers, IDS, setLayerMode, setMetric, setSourceData } from './layers'
 
 setWorkerUrl(workerUrl)
 
 const STYLE_URL = import.meta.env.VITE_STYLE_URL ?? 'https://tiles.openfreemap.org/styles/positron'
-/** Price bubbles collide and clutter beyond this many homes in view; dots and clusters take over. */
-const MAX_BUBBLES = 300
 const DATA = `${import.meta.env.BASE_URL}data/v1/`
 
 interface FeatureCollection {
@@ -40,7 +38,7 @@ export interface ViewState {
 interface Props {
   index: IndexData | undefined
   filters: Filters
-  /** filtered sales for every zip near the viewport (drawn as dots / clusters / price bubbles) */
+  /** filtered sales for every zip near the viewport (drawn as dots plus the best-ranked price pills) */
   homes: Home[]
   selected: Home | null
   priceOf: PriceOf
@@ -131,27 +129,18 @@ export default function MapView({ index, filters, homes, selected, priceOf, onSe
     })
 
     const areas = [IDS.hex7Fill, IDS.hex8Fill, IDS.zipFill]
-    const markers = [HL.circles, HL.bubbles]
+    const markers = [HL.pillsHover, HL.pills, HL.pillsViewed, HL.dots]
     const present = (ids: string[]) => ids.filter((id) => map.getLayer(id))
     map.on('mousemove', (e) => {
       const m = map.queryRenderedFeatures(e.point, { layers: present(markers) })[0]
-      const cl = map.queryRenderedFeatures(e.point, { layers: present([HL.clusters]) })[0]
       setHovered(m ? String(m.properties?.key) : null, 'map')
-      map.getCanvas().style.cursor = m || cl || map.queryRenderedFeatures(e.point, { layers: present(areas) }).length ? 'pointer' : ''
+      map.getCanvas().style.cursor = m || map.queryRenderedFeatures(e.point, { layers: present(areas) }).length ? 'pointer' : ''
     })
     map.on('mouseout', () => setHovered(null))
     map.on('click', (e) => {
       const m = map.queryRenderedFeatures(e.point, { layers: present(markers) })[0]
       if (m) {
         onSelect.current(String(m.properties?.key))
-        return
-      }
-      const cl = map.queryRenderedFeatures(e.point, { layers: present([HL.clusters]) })[0]
-      if (cl) {
-        const src = map.getSource(HL.src) as GeoJSONSource
-        src.getClusterExpansionZoom(Number(cl.properties?.cluster_id)).then((z) => {
-          map.easeTo({ center: (cl.geometry as { coordinates: [number, number] }).coordinates, zoom: Math.min(z + 0.5, 16), duration: reducedMotion() ? 0 : 500 })
-        })
         return
       }
       const f = map.queryRenderedFeatures(e.point, { layers: present(areas) })[0]
@@ -175,16 +164,17 @@ export default function MapView({ index, filters, homes, selected, priceOf, onSe
     // eslint-disable-next-line react-hooks/exhaustive-deps -- create once; `failed` only gates the initial attempt
   }, [])
 
-  // data layers
+  // area layers (off by default, so their data is only fetched when the viewer turns them on)
+  const showHex = filters.layer === 'hex'
   useEffect(() => {
     const map = mapRef.current
-    if (!ready || !map || !index) return
+    if (!ready || !map || !index || !showHex) return
     const ctl = new AbortController()
     fetchJson(`${DATA}hex7.geojson?v=${index.version}`, { signal: ctl.signal }).then((d) => setSourceData(map, IDS.hex7, d), () => {})
     return () => ctl.abort()
-  }, [ready, index])
+  }, [ready, index, showHex])
 
-  const needHex8 = zoom >= 10
+  const needHex8 = showHex && zoom >= 10
   useEffect(() => {
     const map = mapRef.current
     if (!ready || !map || !index || !needHex8) return
@@ -213,20 +203,12 @@ export default function MapView({ index, filters, homes, selected, priceOf, onSe
     return () => ctl.abort()
   }, [ready, index, showZips])
 
-  // homes -> map (dots, clusters, bubbles); bubbles are only worth drawing when the view is not crowded
+  // homes -> map: a dot for every sale; MapLibre keeps as many ranked price pills as fit
   useEffect(() => {
     const map = mapRef.current
     if (!ready || !map || !band) return
     setHomes(map, homes, band, priceOf)
   }, [ready, homes, band, priceOf])
-  useEffect(() => {
-    const map = mapRef.current
-    if (!ready || !map) return
-    const b = map.getBounds()
-    const inView = homes.reduce((n, h) => n + (b.contains([h.lon, h.lat]) ? 1 : 0), 0)
-    setBubblesVisible(map, inView <= MAX_BUBBLES || zoom >= 15.5)
-  }, [ready, homes, zoom])
-
   // selected home: ring + bubble, and bring it into view if it is outside the current viewport
   useEffect(() => {
     const map = mapRef.current
@@ -237,7 +219,16 @@ export default function MapView({ index, filters, homes, selected, priceOf, onSe
     }
   }, [ready, selected, band, priceOf])
 
-  // hover from the list (or the map) -> feature-state highlight
+  // opened sales turn their pill pale grey
+  const viewed = useRef<string[]>([])
+  useEffect(() => {
+    const map = mapRef.current
+    if (!ready || !map) return
+    if (selected && !viewed.current.includes(selected.key)) viewed.current = [...viewed.current, selected.key]
+    setViewedPills(map, viewed.current.filter((k) => k !== selected?.key))
+  }, [ready, selected])
+
+  // hover from the list (or the map): dark pill and a ringed dot
   useEffect(() => {
     const map = mapRef.current
     if (!ready || !map) return
@@ -245,6 +236,7 @@ export default function MapView({ index, filters, homes, selected, priceOf, onSe
     if (prev && map.getSource(HL.src)) map.setFeatureState({ source: HL.src, id: prev }, { hover: false })
     if (hover.key && map.getSource(HL.src)) map.setFeatureState({ source: HL.src, id: hover.key }, { hover: true })
     prevHover.current = hover.key
+    setHoveredPill(map, hover.key)
   }, [ready, hover.key])
 
   // filters -> map
@@ -278,7 +270,7 @@ export default function MapView({ index, filters, homes, selected, priceOf, onSe
         </p>
       )}
       <div className="legend-slot">
-        <Legend metric={filters.metric} showNoData={!showZips} />
+        <Legend metric={filters.metric} layer={filters.layer} />
       </div>
     </div>
   )

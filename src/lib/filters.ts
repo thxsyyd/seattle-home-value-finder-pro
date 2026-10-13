@@ -1,5 +1,6 @@
 export type SortKey = 'dev' | 'price' | 'ppsf' | 'newest' | 'sqft'
-export type LayerKey = 'hex' | 'zip' | 'dots'
+/** Optional area colouring under the markers: none (default), smoothed hexagons, or ZIP-code areas. */
+export type LayerKey = 'none' | 'hex' | 'zip'
 export type MetricKey = 'ppsf' | 'price' | 'dev'
 export type ViewKey = 'map' | 'list'
 /** "under" keeps only sales at least 10% below the model estimate; "all" shows every sale. */
@@ -36,10 +37,10 @@ export interface Filters {
   follow: boolean
 }
 
-export const DEFAULTS: Filters = { maxp: DEFAULT_BUDGET, show: 'under', sort: 'dev', layer: 'hex', metric: 'ppsf', adj: 'none', view: 'map', follow: true }
+export const DEFAULTS: Filters = { maxp: DEFAULT_BUDGET, show: 'under', sort: 'dev', layer: 'none', metric: 'ppsf', adj: 'none', view: 'map', follow: true }
 
 const SORTS: SortKey[] = ['dev', 'price', 'ppsf', 'newest', 'sqft']
-const LAYERS: LayerKey[] = ['hex', 'zip', 'dots']
+const LAYERS: LayerKey[] = ['none', 'hex', 'zip']
 const METRICS: MetricKey[] = ['ppsf', 'price', 'dev']
 const VIEWS: ViewKey[] = ['map', 'list']
 const SHOWS: ShowKey[] = ['under', 'all']

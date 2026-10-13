@@ -14,13 +14,15 @@ function Group<T extends string>({ label, value, options, onChange }: { label: s
   )
 }
 
-/** Layer and colour settings, shown in the sidebar while the map is on screen. */
+/** Optional area colouring under the markers. "Colour by" only matters, so only shows, while an area layer is on. */
 export function MapControls({ layer, metric, onLayer, onMetric }: { layer: LayerKey; metric: MetricKey; onLayer: (l: LayerKey) => void; onMetric: (m: MetricKey) => void }) {
   const t = useT()
   return (
     <div className="mc">
-      <Group<LayerKey> label={t('map.areas')} value={layer === 'zip' ? 'zip' : 'hex'} options={[['hex', t('map.smoothed')], ['zip', t('map.zips')]]} onChange={onLayer} />
-      <Group<MetricKey> label={t('map.colourBy')} value={metric} options={[['ppsf', t('map.ppsf')], ['price', t('map.price')], ['dev', t('map.dev')]]} onChange={onMetric} />
+      <Group<LayerKey> label={t('map.areas')} value={layer} options={[['none', t('map.none')], ['hex', t('map.smoothed')], ['zip', t('map.zips')]]} onChange={onLayer} />
+      {layer !== 'none' && (
+        <Group<MetricKey> label={t('map.colourBy')} value={metric} options={[['ppsf', t('map.ppsf')], ['price', t('map.price')], ['dev', t('map.dev')]]} onChange={onMetric} />
+      )}
     </div>
   )
 }

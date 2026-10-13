@@ -6,7 +6,7 @@ const p = (s: string) => new URLSearchParams(s)
 describe('filter URL codec', () => {
   it('opens on the starting view for an empty query and writes an empty query back', () => {
     const f = parseFilters(p(''))
-    expect(f).toMatchObject({ maxp: DEFAULT_BUDGET, show: 'under', sort: 'dev', layer: 'hex', metric: 'ppsf', adj: 'none', view: 'map', follow: true })
+    expect(f).toMatchObject({ maxp: DEFAULT_BUDGET, show: 'under', sort: 'dev', layer: 'none', metric: 'ppsf', adj: 'none', view: 'map', follow: true })
     expect(applyFilters(p(''), f).toString()).toBe('')
   })
 

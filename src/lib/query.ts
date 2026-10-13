@@ -26,12 +26,14 @@ export function filterHomes(homes: Home[], f: Filters, priceOf: PriceOf = asSold
   })
 }
 
+/** Sort key for "most below the model estimate first"; very large gaps (often unusual sales) go after the rest. */
+export const devRank = (h: Home): number => (h.dev <= UNUSUAL_DEV ? 1 - h.dev : h.dev)
+
 export const inBbox = (homes: Home[], b: BBox) => homes.filter((h) => pointInBbox(h.lon, h.lat, b))
 
 export function sortHomes(homes: Home[], sort: SortKey, priceOf: PriceOf = asSold): Home[] {
   const key: Record<SortKey, (h: Home) => number> = {
-    // most below the model first, but very large gaps (often unusual sales) sort after the rest
-    dev: (h) => (h.dev <= UNUSUAL_DEV ? 1 - h.dev : h.dev),
+    dev: devRank,
     price: (h) => priceOf(h),
     ppsf: (h) => priceOf(h) / h.sqft,
     newest: (h) => -Date.parse(h.date),
