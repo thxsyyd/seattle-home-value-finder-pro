@@ -124,6 +124,16 @@ export const en = {
   'size.label': 'Living area (sq ft)',
   'built.label': 'Year built',
 
+  // cards
+  'card.in': 'Home in ZIP {zip}',
+  'card.specs': '{beds} bd · {baths} ba · {sqft} sqft',
+  'card.sold': 'Sold {date}',
+  'card.below': '{n}% below',
+  'card.above': '{n}% above',
+  'card.estimate': 'model estimate',
+  'card.estimateVal': 'model estimate {price}',
+  'card.range': 'Sold {pct} compared with the model estimate. The model’s typical range is {lo} to {hi}.',
+
   // list and cards
   'list.zoom': 'Zoom in or pick a ZIP code',
   'list.inView': '{n} homes in view',
@@ -137,9 +147,8 @@ export const en = {
   'sort.ppsf': '$ per sq ft',
   'sort.newest': 'Newest sale',
   'sort.sqft': 'Largest',
-  'card.meta': '{beds} bd · {baths} ba · {sqft} sqft · ZIP {zip} · sold {date}',
   'card.was': '(sold {price})',
-  'card.unusual': 'Unusual sale: check before trusting',
+  'card.unusual': 'Unusual sale',
   'dev.below': '{n}% below model estimate',
   'dev.above': '{n}% above model estimate',
   'dev.near': '{pct} vs model (within its usual error)',

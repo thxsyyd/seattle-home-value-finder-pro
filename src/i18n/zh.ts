@@ -126,6 +126,16 @@ export const zh: Record<MsgKey, string> = {
   'size.label': '居住面积（平方英尺）',
   'built.label': '建造年份',
 
+  // cards
+  'card.in': '邮编 {zip} 的房子',
+  'card.specs': '{beds} 卧 · {baths} 卫 · {sqft} 平方英尺',
+  'card.sold': '{date}成交',
+  'card.below': '低 {n}%',
+  'card.above': '高 {n}%',
+  'card.estimate': '模型估价',
+  'card.estimateVal': '模型估价 {price}',
+  'card.range': '成交价比模型估价 {pct}。模型的通常范围是 {lo} 到 {hi}。',
+
   // list and cards
   'list.zoom': '请放大地图或选择邮编',
   'list.inView': '视野内 {n} 套',
@@ -139,9 +149,8 @@ export const zh: Record<MsgKey, string> = {
   'sort.ppsf': '每平方英尺价格',
   'sort.newest': '最近成交',
   'sort.sqft': '面积最大',
-  'card.meta': '{beds} 卧 · {baths} 卫 · {sqft} 平方英尺 · 邮编 {zip} · {date} 成交',
   'card.was': '（成交价 {price}）',
-  'card.unusual': '异常成交：请谨慎对待',
+  'card.unusual': '异常成交',
   'dev.below': '低于模型估计 {n}%',
   'dev.above': '高于模型估计 {n}%',
   'dev.near': '{pct}（在模型通常误差范围内）',

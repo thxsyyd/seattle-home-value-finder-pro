@@ -1,5 +1,5 @@
 import { useVirtualizer } from '@tanstack/react-virtual'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useOutletContext, useSearchParams } from 'react-router'
 import { DebugPanel } from '../components/DebugPanel'
 import { useT } from '../i18n'
@@ -10,8 +10,8 @@ import { useHover } from '../state/hoverStore'
 import { useFilters } from '../state/useFilters'
 import type { ExploreContext } from './Explore'
 
-const ROW = 112
-const GAP = 8
+const ROW = 262 // one card plus its gap
+const CARD_H = 238
 
 export function ListPanel() {
   const { index, rows, loading, zoomedIn, priceOf } = useOutletContext<ExploreContext>()
@@ -20,14 +20,24 @@ export function ListPanel() {
   const hover = useHover()
   const t = useT()
   const scroller = useRef<HTMLDivElement>(null)
-  const virt = useVirtualizer({ count: rows.length, getScrollElement: () => scroller.current, estimateSize: () => ROW + GAP, overscan: 6 })
+  // two columns when the list is wide enough, like a listings grid
+  const [cols, setCols] = useState(1)
+  useEffect(() => {
+    const el = scroller.current
+    if (!el) return
+    const ro = new ResizeObserver(() => setCols(el.clientWidth >= 560 ? 2 : 1))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  const groups = Math.ceil(rows.length / cols)
+  const virt = useVirtualizer({ count: groups, getScrollElement: () => scroller.current, estimateSize: () => ROW, overscan: 3 })
 
   // hovering a marker scrolls its card into view (hovering a card never scrolls the list)
   useEffect(() => {
     if (hover.source !== 'map' || !hover.key) return
     const i = rows.findIndex((h) => h.key === hover.key)
-    if (i >= 0) virt.scrollToIndex(i, { align: 'auto' })
-  }, [hover.key, hover.source, rows, virt])
+    if (i >= 0) virt.scrollToIndex(Math.floor(i / cols), { align: 'auto' })
+  }, [hover.key, hover.source, rows, virt, cols])
 
   const band = index?.model.error_overall
 
@@ -66,16 +76,20 @@ export function ListPanel() {
           </ol>
         )}
         {zoomedIn && !loading && rows.length === 0 && <p className="empty">{t('list.empty')}</p>}
-        {zoomedIn && band && (
+        {zoomedIn && loading && rows.length === 0 && (
+          <div className="grid" aria-hidden="true">
+            {[0, 1, 2, 3].map((i) => <div key={i} className="skeleton" />)}
+          </div>
+        )}
+        {zoomedIn && band && rows.length > 0 && (
           <ol style={{ listStyle: 'none', margin: 0, padding: 0, position: 'relative', height: virt.getTotalSize() }}>
-            {virt.getVirtualItems().map((v) => {
-              const h = rows[v.index]
-              return (
-                <li key={h.key} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: ROW, transform: `translateY(${v.start}px)` }}>
-                  <HomeCard home={h} band={band} hovered={hover.key === h.key} price={priceOf(h)} style={{ height: '100%', boxSizing: 'border-box' }} />
-                </li>
-              )
-            })}
+            {virt.getVirtualItems().map((v) => (
+              <li key={v.index} className="grid" style={{ position: 'absolute', top: 0, left: 0, right: 0, height: CARD_H, transform: `translateY(${v.start}px)`, gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))` }}>
+                {rows.slice(v.index * cols, v.index * cols + cols).map((h) => (
+                  <HomeCard key={h.key} home={h} band={band} hovered={hover.key === h.key} price={priceOf(h)} hideUnderBadge={f.show === 'under' && f.dv === undefined} style={{ height: '100%', boxSizing: 'border-box' }} />
+                ))}
+              </li>
+            ))}
           </ol>
         )}
       </div>
