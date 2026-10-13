@@ -7,7 +7,7 @@ import { findZip } from '../lib/zipFind'
 import { Icon } from './Icon'
 
 /** Jump straight to a ZIP code: type or pick from the list, then Enter. */
-export function ZipFinder() {
+export function ZipFinder({ onDone, autoFocus }: { onDone?: () => void; autoFocus?: boolean }) {
   const t = useT()
   const index = useIndex()
   const navigate = useNavigate()
@@ -28,6 +28,7 @@ export function ZipFinder() {
     setValue('')
     const next = applyFilters(params, { ...parseFilters(params), ll: [row.centroid[1], row.centroid[0]], z: 12.5 })
     navigate({ pathname: `/zip/${zip}`, search: `?${next.toString()}` })
+    onDone?.()
   }
 
   return (
@@ -40,6 +41,7 @@ export function ZipFinder() {
           inputMode="numeric"
           list="zip-options"
           autoComplete="off"
+          autoFocus={autoFocus}
           placeholder={t('nav.zipPlaceholder')}
           value={value}
           aria-invalid={missing}

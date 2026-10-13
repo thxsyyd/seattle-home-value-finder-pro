@@ -14,12 +14,12 @@ body {
   margin: 0;
   font: var(--fs-body) / 1.45 var(--font);
   font-variant-numeric: tabular-nums;
-  color: var(--text);
-  background: var(--bg);
+  color: var(--ink);
+  background: var(--surface);
 }
 
 :focus-visible {
-  outline: 2px solid var(--focus);
+  outline: 2px solid var(--ink);
   outline-offset: 2px;
   box-shadow: 0 0 0 4px #fff;
 }
@@ -30,7 +30,7 @@ body {
   top: -48px;
   padding: var(--s-2) var(--s-3);
   background: var(--surface);
-  border-radius: var(--r-sm);
+  border-radius: var(--r-8);
   z-index: 100;
 }
 .skip-link:focus {

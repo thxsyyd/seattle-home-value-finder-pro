@@ -21,7 +21,7 @@ export const en = {
   'nav.zips': 'Find a ZIP code',
   'nav.zipPlaceholder': 'ZIP code, e.g. 98103',
   'nav.zipNone': 'No sales in that ZIP code',
-  'nav.compare': 'Compare ZIP codes',
+  'nav.compare': 'Compare',
   'nav.method': 'About & method',
   'nav.collapse': 'Collapse sidebar',
   'nav.expand': 'Expand sidebar',
@@ -63,6 +63,24 @@ export const en = {
   'a11y.reset': 'Reset to defaults',
   'a11y.close': 'Close',
   'a11y.note': 'Saved in this browser only.',
+
+  // header, search pill, chips, filters
+  'search.zip': 'Find a ZIP code',
+  'search.budget': 'Up to {price}',
+  'search.budgetAny': 'Any budget',
+  'search.beds': '{n}+ bedrooms',
+  'search.bedsAny': 'Any bedrooms',
+  'search.aria': 'Search settings',
+  'menu.label': 'Menu',
+  'nav.tools': 'Tools',
+  'filters.title': 'Filters',
+  'filters.show': 'Show {n} homes',
+  'filters.clear': 'Clear all',
+  'chip.today': 'Today’s dollars',
+  'results.under': '{n} possibly undervalued homes',
+  'results.all': '{n} homes sold',
+  'results.subUnder': 'Sold at least 10% below the model’s estimate. The model can’t see condition, so check before trusting it.',
+  'results.subAll': 'Every sale in the map area, and how it compares with the model’s estimate.',
 
   // first-screen filters
   'show.label': 'Show',

@@ -33,23 +33,21 @@ export function ListPanel() {
 
   return (
     <>
-      <div className="result-head" aria-live="polite">
-        <span>{!zoomedIn ? t('list.zoom') : loading && rows.length === 0 ? t('loading') : t(f.follow ? 'list.inView' : 'list.loaded', { n: rows.length.toLocaleString() })}</span>
-        <span style={{ display: 'inline-flex', gap: 'var(--s-3)', alignItems: 'center' }}>
-          <label>
-            <input type="checkbox" checked={f.follow} onChange={(e) => setFilters({ follow: e.target.checked })} /> {t('list.follow')}
-          </label>
-          <label>
-            {t('sort.label')}{' '}
-            <select value={f.sort} onChange={(e) => setFilters({ sort: e.target.value as SortKey })}>
-              <option value="dev">{t('sort.dev')}</option>
-              <option value="price">{t('sort.price')}</option>
-              <option value="ppsf">{t('sort.ppsf')}</option>
-              <option value="newest">{t('sort.newest')}</option>
-              <option value="sqft">{t('sort.sqft')}</option>
-            </select>
-          </label>
-        </span>
+      <div className="results-head">
+        <h2 className="results-title" aria-live="polite">
+          {!zoomedIn ? t('list.zoom') : loading && rows.length === 0 ? t('loading') : t(f.show === 'under' && f.dv === undefined ? 'results.under' : 'results.all', { n: rows.length.toLocaleString() })}
+        </h2>
+        <p className="results-sub">{t(f.show === 'under' && f.dv === undefined ? 'results.subUnder' : 'results.subAll')}</p>
+        <label className="sortbox">
+          {t('sort.label')}{' '}
+          <select value={f.sort} onChange={(e) => setFilters({ sort: e.target.value as SortKey })}>
+            <option value="dev">{t('sort.dev')}</option>
+            <option value="price">{t('sort.price')}</option>
+            <option value="ppsf">{t('sort.ppsf')}</option>
+            <option value="newest">{t('sort.newest')}</option>
+            <option value="sqft">{t('sort.sqft')}</option>
+          </select>
+        </label>
       </div>
       <div ref={scroller} className="list-scroll">
         {!zoomedIn && index && (

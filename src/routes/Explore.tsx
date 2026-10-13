@@ -1,7 +1,7 @@
 import { lazy, Suspense, useCallback, useMemo, useState } from 'react'
 import { Outlet, useLocation, useMatch, useNavigate } from 'react-router'
 import { DisclaimerBanner } from '../components/DisclaimerBanner'
-import { FilterBar } from '../components/FilterBar'
+import { FilterChips } from '../layout/FilterChips'
 import { useT } from '../i18n'
 import type { Home, IndexData } from '../data/types'
 import { useHome } from '../data/useHome'
@@ -79,11 +79,11 @@ export function Explore() {
 
   return (
     <div className="explore" data-view={filters.view} data-detail={detail}>
+      <FilterChips filters={filters} index={index.data} count={rows.length} onChange={(patch) => setFilters(patch)} />
       <DisclaimerBanner range={index.data?.dataRange} />
       <main className="split">
         <h1 className="sr-only">{t('h1')}</h1>
         <section id="main-content" className="panel" aria-label={t('panel.results')} tabIndex={-1}>
-          {!detail && <FilterBar filters={filters} index={index.data} onChange={(patch) => setFilters(patch)} />}
           <Outlet context={ctx} />
         </section>
         <section className="mapwrap" aria-label={t('map.region')}>
@@ -91,6 +91,9 @@ export function Explore() {
             <MapView index={index.data} filters={filters} homes={filtered} priceOf={priceOf} selected={selected} onSelectHome={onSelectHome} onViewChange={onViewChange} />
           </Suspense>
           <LayersButton />
+          <label className="mapfollow">
+            <input type="checkbox" checked={filters.follow} onChange={(e) => setFilters({ follow: e.target.checked })} /> {t('list.follow')}
+          </label>
         </section>
       </main>
       <nav className="viewtoggle" aria-label={t('view.toggle')}>

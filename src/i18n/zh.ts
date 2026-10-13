@@ -23,7 +23,7 @@ export const zh: Record<MsgKey, string> = {
   'nav.zips': '查找邮编',
   'nav.zipPlaceholder': '邮编，例如 98103',
   'nav.zipNone': '该邮编没有成交记录',
-  'nav.compare': '对比邮编',
+  'nav.compare': '对比',
   'nav.method': '关于和方法',
   'nav.collapse': '收起侧边栏',
   'nav.expand': '展开侧边栏',
@@ -65,6 +65,24 @@ export const zh: Record<MsgKey, string> = {
   'a11y.reset': '恢复默认',
   'a11y.close': '关闭',
   'a11y.note': '仅保存在这个浏览器里。',
+
+  // header, search pill, chips, filters
+  'search.zip': '查找邮编',
+  'search.budget': '不超过 {price}',
+  'search.budgetAny': '预算不限',
+  'search.beds': '{n}+ 间卧室',
+  'search.bedsAny': '卧室不限',
+  'search.aria': '搜索设置',
+  'menu.label': '菜单',
+  'nav.tools': '工具',
+  'filters.title': '筛选',
+  'filters.show': '显示 {n} 套',
+  'filters.clear': '清除全部',
+  'chip.today': '今日价',
+  'results.under': '{n} 套可能被低估的房子',
+  'results.all': '{n} 套成交房源',
+  'results.subUnder': '成交价比模型估价低至少 10%。模型看不到房屋状况，所以要自己核实。',
+  'results.subAll': '地图范围内的每一笔成交，以及它与模型估价的比较。',
 
   // first-screen filters
   'show.label': '显示',
