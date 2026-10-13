@@ -10,7 +10,7 @@ import numpy as np
 
 PAL = {
     "deviation (RdBu)": ["#2166ac", "#67a9cf", "#b0d0e6", "#efefef", "#f9cdb1", "#ef8a62", "#b2182b"],
-    "sequential (YlGnBu)": ["#c7e9b4", "#7fcdbb", "#41b6c4", "#1d91c0", "#225ea8", "#253494", "#081d58"],
+    "area layer (grey lightness)": ["#eeeeee", "#cfcfcf", "#b0b0b0", "#939393", "#777777", "#5c5c5c", "#404040"],
 }
 M = {
     "normal": np.eye(3),

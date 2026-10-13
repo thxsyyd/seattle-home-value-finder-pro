@@ -6,8 +6,9 @@ import { priceShort, signedPct } from '../lib/format'
 // Diverging: ColorBrewer RdBu (7 classes) with the three middle classes adjusted so neighbours stay at least 17 Delta E
 // apart under protan/deutan/tritan simulation (scripts/cvd_check.py); blue = sold below the model estimate. Sequential: YlGnBu, last 7 of 9.
 export const DEV_COLORS = ['#2166ac', '#67a9cf', '#b0d0e6', '#efefef', '#f9cdb1', '#ef8a62', '#b2182b']
-export const SEQ_COLORS = ['#c7e9b4', '#7fcdbb', '#41b6c4', '#1d91c0', '#225ea8', '#253494', '#081d58']
-export const NO_DATA = '#cfd3d8'
+// Area layer: even steps of lightness (CIELAB L* 94 to 27), no hue, so it never competes with the blue/red data marks.
+export const SEQ_COLORS = ['#eeeeee', '#cfcfcf', '#b0b0b0', '#939393', '#777777', '#5c5c5c', '#404040']
+export const NO_DATA = '#e0e0e0'
 
 export const BREAKS: Record<MetricKey, number[]> = {
   ppsf: [150, 200, 250, 300, 400, 500],

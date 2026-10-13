@@ -13,6 +13,7 @@ import { useT } from '../i18n'
 import { reducedMotion } from '../a11y/prefs'
 import { setHovered, useHover } from '../state/hoverStore'
 import { Legend } from './Legend'
+import { applyQuietStyle } from './quietStyle'
 import { addHomeLayers, HL, setBubblesVisible, setHomes, setSelected } from './homesLayer'
 import { DEFAULT_VIEW, webglSupported } from './view'
 import { addRegionLayers, IDS, setLayerMode, setMetric, setSourceData } from './layers'
@@ -117,6 +118,7 @@ export default function MapView({ index, filters, homes, selected, priceOf, onSe
       console.warn('map error', e.error?.message)
     })
     map.on('load', () => {
+      applyQuietStyle(map)
       addRegionLayers(map, initial.current.metric)
       addHomeLayers(map)
       setLayerMode(map, initial.current.layer)

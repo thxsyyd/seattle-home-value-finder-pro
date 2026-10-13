@@ -1,46 +1,73 @@
+/*
+ * Every colour here has exactly one meaning (see README, "Design rules").
+ *   ink          primary action, selected state, hovered/selected price pill
+ *   ink-2        secondary text;  hairline: borders and dividers
+ *   data-below   sold BELOW the model estimate   (data only)
+ *   data-above   sold ABOVE the model estimate   (data only)
+ *   data-near    close to the estimate           (data only)
+ *   notice       a caveat the reader should not miss (banner, "unusual sale")
+ * Blue and red never appear on controls, links or backgrounds.
+ */
 :root {
-  /* neutrals */
-  --text: #1b2430;
-  --muted: #5b6675;
-  --border: #d9dee5;
+  --ink: #222222;
+  --ink-2: #717171;
+  --hairline: #dddddd;
   --surface: #ffffff;
-  --bg: #f5f6f8;
-  --accent: #0b5cad;
-  --focus: #0b5cad;
+  --surface-2: #f7f7f7;
 
-  /* diverging: sale price vs. model estimate (ColorBrewer RdBu, 7 classes) */
-  --dev-1: #2166ac;
-  --dev-2: #67a9cf;
-  --dev-3: #b0d0e6;
-  --dev-4: #efefef;
-  --dev-5: #f9cdb1;
-  --dev-6: #ef8a62;
-  --dev-7: #b2182b;
+  --data-below: #2166ac;
+  --data-below-ink: #1c5a99; /* text version, >= 7:1 on white */
+  --data-above: #b2182b;
+  --data-above-ink: #9c1d2b;
+  --data-near: #8a8a8a;
+  --data-near-ink: #5b5b5b;
 
-  /* sequential: price, $/sqft (ColorBrewer YlGnBu, last 7 of 9) */
-  --seq-1: #c7e9b4;
-  --seq-2: #7fcdbb;
-  --seq-3: #41b6c4;
-  --seq-4: #1d91c0;
-  --seq-5: #225ea8;
-  --seq-6: #253494;
-  --seq-7: #081d58;
-  --no-data: #cfd3d8;
+  --notice-bg: #fff4d6;
+  --notice-border: #e8cf85;
+  --notice-ink: #5c4a00;
 
-  /* spacing (4px base), radii */
+  /* optional area layer: lightness only, no hue, so it never competes with the blue/red data marks */
+  --area-1: #eeeeee;
+  --area-2: #cfcfcf;
+  --area-3: #b0b0b0;
+  --area-4: #939393;
+  --area-5: #777777;
+  --area-6: #5c5c5c;
+  --area-7: #404040;
+  --no-data: #e0e0e0;
+
+  /* radii: controls 8, inputs and cards 12, large panels 16, chips and pills fully round */
+  --r-8: 8px;
+  --r-12: 12px;
+  --r-16: 16px;
+  --r-pill: 999px;
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-2: 0 6px 16px rgba(0, 0, 0, 0.16);
+
+  /* spacing (4px base) */
   --s-1: 4px;
   --s-2: 8px;
   --s-3: 12px;
   --s-4: 16px;
   --s-5: 24px;
   --s-6: 32px;
-  --r-sm: 6px;
-  --r-md: 10px;
-  --r-pill: 999px;
 
-  /* type */
-  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --fs-body: 1rem;
-  --fs-small: 0.875rem;
+  /* type: two weights only (400 text, 600 emphasis); sizes 12 / 14 / 16 / 22 */
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   --fs-tiny: 0.75rem;
+  --fs-small: 0.875rem;
+  --fs-body: 1rem;
+  --fs-title: 1.375rem;
+  --fw: 400;
+  --fw-strong: 600;
+
+  /* legacy names, kept until every stylesheet uses the ones above */
+  --text: var(--ink);
+  --muted: var(--ink-2);
+  --border: var(--hairline);
+  --bg: var(--surface-2);
+  --accent: var(--ink);
+  --focus: var(--ink);
+  --r-sm: var(--r-8);
+  --r-md: var(--r-12);
 }

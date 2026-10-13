@@ -1,6 +1,7 @@
 import type { GeoJSONSource, Map as MlMap } from 'maplibre-gl'
 import type { MetricKey, LayerKey } from '../lib/filters'
 import { fillColorExpression, NO_DATA } from './colors'
+import { QUIET } from './quietStyle'
 
 // Region fills go in above buildings (which are opaque from z12) but below every road layer, so roads and labels stay on top.
 const BEFORE = 'tunnel_motorway_casing'
@@ -23,7 +24,7 @@ export function addRegionLayers(map: MlMap, metric: MetricKey): void {
   // Water drawn again above the fills so colour never spills over lakes and Puget Sound.
   map.addLayer({
     id: IDS.waterMask, type: 'fill', source: 'openmaptiles', 'source-layer': 'water',
-    filter: ['==', ['geometry-type'], 'Polygon'], paint: { 'fill-color': 'rgb(194, 200, 202)' },
+    filter: ['==', ['geometry-type'], 'Polygon'], paint: { 'fill-color': QUIET.water },
   }, BEFORE)
   map.addLayer({
     id: IDS.hexLine, type: 'line', source: IDS.hex8, minzoom: 10.5,
