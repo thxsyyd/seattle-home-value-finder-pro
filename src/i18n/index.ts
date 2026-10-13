@@ -22,10 +22,9 @@ export function translate(lang: Lang, key: MsgKey, params?: Record<string, strin
   return format(CATALOGS[lang][key] ?? en[key], params)
 }
 
-/** Language when the URL has no ?lang: the last explicit choice in this browser, else the browser language. */
-export function detectLang(stored: string | null, navigatorLang: string | undefined): Lang {
-  if (isLang(stored)) return stored
-  return navigatorLang?.toLowerCase().startsWith('zh') ? 'zh' : 'en'
+/** Language when the URL has no ?lang: the viewer's own earlier choice in this browser, otherwise English (the browser's language is deliberately ignored). */
+export function detectLang(stored: string | null): Lang {
+  return isLang(stored) ? stored : 'en'
 }
 
 function readStored(): string | null {
@@ -39,7 +38,7 @@ function readStored(): string | null {
 export function useLang(): Lang {
   const [params] = useSearchParams()
   const fromUrl = params.get('lang')
-  return isLang(fromUrl) ? fromUrl : detectLang(readStored(), typeof navigator === 'undefined' ? undefined : navigator.language)
+  return isLang(fromUrl) ? fromUrl : detectLang(readStored())
 }
 
 export type T = (key: MsgKey, params?: Record<string, string | number>) => string

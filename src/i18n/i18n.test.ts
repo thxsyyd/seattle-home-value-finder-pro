@@ -28,10 +28,10 @@ describe('helpers', () => {
     expect(translate('zh', 'results.all', { n: 12 })).toBe('12 套成交房源')
     expect(translate('en', 'results.all', { n: 12 })).toBe('12 homes sold')
   })
-  it('detects the language: stored choice first, then the browser', () => {
-    expect(detectLang('zh', 'en-US')).toBe('zh')
-    expect(detectLang(null, 'zh-CN')).toBe('zh')
-    expect(detectLang('fr', 'en-GB')).toBe('en')
-    expect(detectLang(null, undefined)).toBe('en')
+  it('defaults to English: only an earlier explicit choice overrides it, never the browser language', () => {
+    expect(detectLang(null)).toBe('en')
+    expect(detectLang('zh')).toBe('zh')
+    expect(detectLang('en')).toBe('en')
+    expect(detectLang('fr')).toBe('en')
   })
 })

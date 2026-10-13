@@ -39,7 +39,7 @@ budget?** It opens on Seattle and Bellevue with "Possibly undervalued" and a $50
   multiplier; a monthly-cost calculator and an income-based price range use the current mortgage rate.
 - **ZIP pages and comparison** (price distribution and size-vs-price charts), similar sales, and an About page whose
   numbers are read from the generated model card. *Affordability* and *Compare* are links in the header.
-- **English and 简体中文** (`?lang=zh` in the link keeps the choice; the browser language is the default) and
+- **English and 简体中文** (English is the default; `?lang=zh` in the link, or the choice you made earlier in the same browser, switches it) and
   **accessibility settings** (text size, high contrast, reduced animation, underlined links) in the menu. All interface
   text lives in `src/i18n/`; a test checks that every key exists in both languages.
 - **Phone layout:** the search pill collapses to one button, the chips scroll sideways, and a List / Map switch floats at
