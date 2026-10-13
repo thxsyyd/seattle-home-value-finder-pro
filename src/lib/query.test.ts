@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Home } from '../data/types'
 import { DEFAULTS, type Filters } from './filters'
-import { histogram, inBbox, filterHomes, sortHomes } from './query'
+import { devRank, histogram, inBbox, filterHomes, sortHomes } from './query'
 import { money, priceShort, signedPct } from './format'
 import { viewBbox } from './geo'
 
@@ -57,5 +57,13 @@ describe('geo and format helpers', () => {
   })
   it('bins prices with an overflow bin', () => {
     expect(histogram([10, 60, 70, 5000], 50, 150)).toEqual([1, 2, 1])
+  })
+})
+
+describe('devRank', () => {
+  const h = (dev: number) => ({ dev }) as Home
+  it('ranks the most below-estimate sale first and unusual gaps last', () => {
+    const order = [h(0.1), h(-0.3), h(-0.6), h(-0.12)].sort((a, b) => devRank(a) - devRank(b)).map((x) => x.dev)
+    expect(order).toEqual([-0.3, -0.12, 0.1, -0.6])
   })
 })

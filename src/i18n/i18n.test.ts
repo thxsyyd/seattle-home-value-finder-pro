@@ -25,8 +25,8 @@ describe('catalogues', () => {
 describe('helpers', () => {
   it('fills placeholders and leaves unknown ones visible', () => {
     expect(format('{a} and {b}', { a: 1 })).toBe('1 and {b}')
-    expect(translate('zh', 'list.inView', { n: 12 })).toBe('视野内 12 套')
-    expect(translate('en', 'list.inView', { n: 12 })).toBe('12 homes in view')
+    expect(translate('zh', 'results.all', { n: 12 })).toBe('12 套成交房源')
+    expect(translate('en', 'results.all', { n: 12 })).toBe('12 homes sold')
   })
   it('detects the language: stored choice first, then the browser', () => {
     expect(detectLang('zh', 'en-US')).toBe('zh')

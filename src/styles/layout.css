@@ -191,7 +191,6 @@ html[data-text='lg'] { font-size: 112.5%; }
 html[data-text='xl'] { font-size: 125%; }
 html[data-underline='on'] a { text-decoration: underline; text-underline-offset: 3px; }
 html[data-motion='reduce'] *, html[data-motion='reduce'] *::before, html[data-motion='reduce'] *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
-html[data-contrast='high'] { --ink: #000; --ink-2: #2b2b2b; --hairline: #4d4d4d; --surface-2: #fff; --data-below-ink: #00346b; --data-above-ink: #7a0016; --data-near-ink: #2b2b2b; }
 html[data-contrast='high'] .chip, html[data-contrast='high'] .seg button, html[data-contrast='high'] .card, html[data-contrast='high'] .pill, html[data-contrast='high'] .pill-one,
 html[data-contrast='high'] .menu-btn, html[data-contrast='high'] .layers-btn, html[data-contrast='high'] .mapfollow, html[data-contrast='high'] .sb-search label,
 html[data-contrast='high'] .sb-field select, html[data-contrast='high'] .pair input, html[data-contrast='high'] .num-input, html[data-contrast='high'] .field-input input { border: 2px solid #000; }
@@ -199,10 +198,16 @@ html[data-contrast='high'] .disclaimer { background: #fff; border-bottom: 2px so
 html[data-contrast='high'] .badge { background: #fff; border: 2px solid #000; color: #000; }
 
 /* ===== phones ===== */
-@media (min-width: 768px) { .only-phone { display: none !important; } }
-@media (max-width: 767px) {
+/* header compaction: logo only below 1100px; the two tool links move into the menu below 900px */
+@media (max-width: 1100px) {
+  .hdr-name { display: none; }
+  .mapfollow { left: var(--s-3); top: 64px; transform: none; }
+}
+@media (max-width: 899px) {
   .only-desktop { display: none !important; }
   .only-phone { display: flex !important; }
+}
+@media (max-width: 767px) {
   .hdr { grid-template-columns: auto minmax(0, 1fr) auto; gap: var(--s-2); padding: var(--s-2) var(--s-3); }
   .hdr-name { display: none; }
   .pop { width: min(92vw, 420px); left: 0; transform: none; }
@@ -217,7 +222,7 @@ html[data-contrast='high'] .badge { background: #fff; border: 2px solid #000; co
   .results-head { grid-template-columns: minmax(0, 1fr); padding: var(--s-4) var(--s-4) var(--s-2); }
   .sortbox { grid-column: 1; grid-row: auto; justify-self: start; margin-top: var(--s-2); }
   .list-scroll { padding: 0 var(--s-4) var(--s-4); }
-  .mapfollow { top: auto; bottom: 120px; left: var(--s-3); transform: none; }
+  .mapfollow { top: auto; bottom: 120px; }
   .layers { left: auto; right: 56px; }
   .layers-pop { position: absolute; right: 0; }
   .legend-slot { bottom: 176px; }

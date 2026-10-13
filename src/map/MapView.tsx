@@ -56,7 +56,7 @@ function readView(map: MlMap): ViewState {
 /** Show a popup whose content is built with textContent only (no HTML injection from data). */
 function popupNode(title: string, lines: string[]): HTMLElement {
   const el = document.createElement('div')
-  el.style.cssText = 'font: 14px/1.4 system-ui, sans-serif; color: #1b2430;'
+  el.style.cssText = 'font: 14px/1.4 system-ui, sans-serif; color: #222222;'
   const h = document.createElement('strong')
   h.textContent = title
   el.append(h)

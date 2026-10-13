@@ -1,5 +1,5 @@
 import { Outlet } from 'react-router'
-import { LangSync } from '../components/SiteTools'
+import { AccessibilityDialog, LangSync } from '../components/SiteTools'
 import { useT } from '../i18n'
 import { Header } from './Header'
 
@@ -9,6 +9,7 @@ export function AppShell() {
   return (
     <div className="app">
       <LangSync />
+      <AccessibilityDialog />
       <a className="skip-link" href="#main-content">{t('skip')}</a>
       <Header />
       <div className="content">

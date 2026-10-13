@@ -40,34 +40,48 @@ export function LanguageSelect() {
   )
 }
 
-/** Accessibility settings: a button for the sidebar plus the modal dialog it opens. */
-export function AccessibilityTool({ onOpen }: { onOpen?: () => void }) {
+/** The dialog is mounted once (in the app shell) and opened from the menu, so closing the menu cannot unmount it. */
+const opener = { fn: null as null | (() => void) }
+export const openAccessibility = () => opener.fn?.()
+
+export function AccessibilityDialog() {
   const t = useT()
   const prefs = usePrefs()
   const dialog = useRef<HTMLDialogElement>(null)
+  useEffect(() => {
+    opener.fn = () => dialog.current?.showModal()
+    return () => {
+      opener.fn = null
+    }
+  }, [])
   return (
-    <>
-      <button type="button" className="sb-item" title={t('a11y.button')} aria-haspopup="dialog" onClick={() => { onOpen?.(); dialog.current?.showModal() }}>
-        <Icon name="access" />
-        <span className="sb-label">{t('a11y.button')}</span>
-      </button>
-      <dialog ref={dialog} className="a11y-dialog" aria-labelledby="a11y-title" onClick={(e) => { if (e.target === dialog.current) dialog.current?.close() }}>
-        <h2 id="a11y-title">{t('a11y.title')}</h2>
-        <Choice label={t('a11y.text')} name="text" value={prefs.text} options={[['base', t('a11y.text.base')], ['lg', t('a11y.text.lg')], ['xl', t('a11y.text.xl')]]} />
-        <Choice label={t('a11y.contrast')} name="contrast" value={prefs.contrast} options={[['base', t('a11y.contrast.base')], ['high', t('a11y.contrast.high')]]} />
-        <Choice label={t('a11y.motion')} name="motion" value={prefs.motion} options={[['system', t('a11y.motion.system')], ['reduce', t('a11y.motion.reduce')]]} />
-        <fieldset className="a11y-field">
-          <legend>{t('a11y.links')}</legend>
-          <label className="check">
-            <input type="checkbox" checked={prefs.underline} onChange={(e) => setPrefs({ underline: e.target.checked })} /> {t('a11y.links.underline')}
-          </label>
-        </fieldset>
-        <p className="hint">{t('a11y.note')}</p>
-        <div className="dialog-actions">
-          <button type="button" className="secondary" onClick={resetPrefs}>{t('a11y.reset')}</button>
-          <button type="button" className="primary" onClick={() => dialog.current?.close()}>{t('a11y.close')}</button>
-        </div>
-      </dialog>
-    </>
+    <dialog ref={dialog} className="a11y-dialog" aria-labelledby="a11y-title" onClick={(e) => { if (e.target === dialog.current) dialog.current?.close() }}>
+      <h2 id="a11y-title">{t('a11y.title')}</h2>
+      <Choice label={t('a11y.text')} name="text" value={prefs.text} options={[['base', t('a11y.text.base')], ['lg', t('a11y.text.lg')], ['xl', t('a11y.text.xl')]]} />
+      <Choice label={t('a11y.contrast')} name="contrast" value={prefs.contrast} options={[['base', t('a11y.contrast.base')], ['high', t('a11y.contrast.high')]]} />
+      <Choice label={t('a11y.motion')} name="motion" value={prefs.motion} options={[['system', t('a11y.motion.system')], ['reduce', t('a11y.motion.reduce')]]} />
+      <fieldset className="a11y-field">
+        <legend>{t('a11y.links')}</legend>
+        <label className="check">
+          <input type="checkbox" checked={prefs.underline} onChange={(e) => setPrefs({ underline: e.target.checked })} /> {t('a11y.links.underline')}
+        </label>
+      </fieldset>
+      <p className="hint">{t('a11y.note')}</p>
+      <div className="dialog-actions">
+        <button type="button" className="secondary" onClick={resetPrefs}>{t('a11y.reset')}</button>
+        <button type="button" className="primary" onClick={() => dialog.current?.close()}>{t('a11y.close')}</button>
+      </div>
+    </dialog>
+  )
+}
+
+/** Menu row that opens the accessibility dialog. */
+export function AccessibilityTool({ onOpen }: { onOpen?: () => void }) {
+  const t = useT()
+  return (
+    <button type="button" className="sb-item" title={t('a11y.button')} aria-haspopup="dialog" onClick={() => { onOpen?.(); openAccessibility() }}>
+      <Icon name="access" />
+      <span className="sb-label">{t('a11y.button')}</span>
+    </button>
   )
 }

@@ -44,7 +44,7 @@ function ZipCompare({ a, b, index, t }: { a: string; b: string; index: IndexData
       </table>
       {ha.data && hb.data && (
         <Suspense fallback={<p>{t('charts.loading')}</p>}>
-          <ZipCharts series={[{ name: t('zip.series', { zip: a }), color: '#0b5cad', homes: ha.data }, { name: t('zip.series', { zip: b }), color: '#b45309', homes: hb.data }]} />
+          <ZipCharts series={[{ name: t('zip.series', { zip: a }), color: '#222222', homes: ha.data }, { name: t('zip.series', { zip: b }), color: '#a8a8a8', homes: hb.data }]} />
         </Suspense>
       )}
     </>

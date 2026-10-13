@@ -71,3 +71,14 @@
   --r-sm: var(--r-8);
   --r-md: var(--r-12);
 }
+
+/* high-contrast preference (src/a11y/prefs.ts): darker neutrals and data text colours */
+html[data-contrast='high'] {
+  --ink: #000000;
+  --ink-2: #2b2b2b;
+  --hairline: #4d4d4d;
+  --surface-2: #ffffff;
+  --data-below-ink: #00346b;
+  --data-above-ink: #7a0016;
+  --data-near-ink: #2b2b2b;
+}

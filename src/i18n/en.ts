@@ -12,21 +12,11 @@ export const en = {
   'lang.label': 'Language',
 
   // sidebar
-  'nav.main': 'Main navigation',
-  'nav.g.explore': 'Explore',
-  'nav.g.tools': 'Tools',
-  'nav.g.learn': 'Learn',
-  'nav.g.settings': 'Settings',
-  'nav.map': 'Map & homes',
   'nav.zips': 'Find a ZIP code',
   'nav.zipPlaceholder': 'ZIP code, e.g. 98103',
   'nav.zipNone': 'No sales in that ZIP code',
   'nav.compare': 'Compare',
   'nav.method': 'About & method',
-  'nav.collapse': 'Collapse sidebar',
-  'nav.expand': 'Expand sidebar',
-  'nav.open': 'Open menu',
-  'nav.close': 'Close menu',
   'compareChooser.hint': 'Pick two ZIP codes to compare prices side by side. To compare two specific homes, open a home and use “Compare with this home” under Similar sales.',
   'compareChooser.a': 'First ZIP code',
   'compareChooser.b': 'Second ZIP code',
@@ -83,16 +73,10 @@ export const en = {
   'results.subAll': 'Every sale in the map area, and how it compares with the model’s estimate.',
 
   // first-screen filters
-  'show.label': 'Show',
-  'show.all': 'All sales',
   'show.under': 'Possibly undervalued',
-  'show.explainSummary': 'What does “possibly undervalued” mean?',
-  'show.explain': 'A model estimates what each home should have sold for, based on its size, grade and location. A home that sold at least 10% below that estimate is shown as “possibly undervalued”. The model cannot see condition or finishes, so check before trusting it.',
   'budget.label': 'Max budget',
   'budget.value': 'Up to {price}',
   'budget.any': 'No limit',
-  'more.label': 'More filters',
-  'more.countN': 'More filters ({n})',
   'more.minPrice': 'Minimum price',
   'more.basis': 'Show prices as',
   'map.layers': 'Map layers',
@@ -100,7 +84,6 @@ export const en = {
   // filters
   'filters.label': 'Filters',
   'chip.waterfront': 'Waterfront',
-  'chip.clear': 'Clear all ({n})',
   'any': 'any',
   'any.cap': 'Any',
   'field.noMin': 'No min',
@@ -136,8 +119,6 @@ export const en = {
 
   // list and cards
   'list.zoom': 'Zoom in or pick a ZIP code',
-  'list.inView': '{n} homes in view',
-  'list.loaded': '{n} homes loaded',
   'list.follow': 'Search as map moves',
   'list.empty': 'No homes match. Try zooming out or clearing a filter.',
   'list.zipRow': '{zip} · {price} median · ${ppsf}/sq ft · {n} sales',

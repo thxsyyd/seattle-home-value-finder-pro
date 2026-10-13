@@ -45,7 +45,7 @@ export function SearchPill() {
   if (phone) {
     return (
       <div className="pillwrap" ref={box}>
-        <button type="button" className="pill pill-one" aria-expanded={open === 'all'} aria-controls="pill-panel" aria-label={t('search.aria')} onClick={() => setOpen(open ? null : 'all')}>
+        <button type="button" className="pill pill-one" aria-expanded={open === 'all'} aria-controls="pill-panel" aria-label={`${t('search.aria')}: ${budget} · ${beds}`} onClick={() => setOpen(open ? null : 'all')}>
           <Icon name="search" />
           <span className="pill-text">{budget} · {beds}</span>
         </button>

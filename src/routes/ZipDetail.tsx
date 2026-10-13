@@ -51,7 +51,7 @@ export function ZipDetail() {
           </p>
           {homes.data && (
             <Suspense fallback={<p>{t('charts.loading')}</p>}>
-              <ZipCharts series={[{ name: t('zip.series', { zip: zip ?? '' }), color: '#0b5cad', homes: homes.data }]} />
+              <ZipCharts series={[{ name: t('zip.series', { zip: zip ?? '' }), color: '#222222', homes: homes.data }]} />
             </Suspense>
           )}
         </>

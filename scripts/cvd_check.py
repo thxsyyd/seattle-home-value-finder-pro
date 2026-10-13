@@ -9,6 +9,7 @@ Run: pipeline/.venv/bin/python scripts/cvd_check.py
 import numpy as np
 
 PAL = {
+    "marker tones (below, near, above)": ["#2166ac", "#8a8a8a", "#b2182b"],
     "deviation (RdBu)": ["#2166ac", "#67a9cf", "#b0d0e6", "#efefef", "#f9cdb1", "#ef8a62", "#b2182b"],
     "area layer (grey lightness)": ["#eeeeee", "#cfcfcf", "#b0b0b0", "#939393", "#777777", "#5c5c5c", "#404040"],
 }

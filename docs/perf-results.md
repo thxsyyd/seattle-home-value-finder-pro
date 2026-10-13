@@ -81,3 +81,28 @@ and `/?show=all&maxp=any`. Performance on the default URL, which now opens on Se
 chunks immediately: 79 (LCP 4.9 s) once, then 98, 97, 98, 98 and 98, 98 on the other two URLs. The spread is the same
 simulation effect described above (one run in seven landed in a slow cluster, at 79 rather than 88), so the honest
 range for this build is roughly 79–98 with most runs at 97–98.
+
+## Airbnb-style redesign (2026-10-12)
+
+What changed: sidebar replaced by a header with a three-part search pill and a chips row; cards lead with a
+sold-vs-estimate bar; the map is a quiet grey-white base with ranked price pills and dots (no clusters, no default area
+colouring); every colour has one meaning (see README, "Design rules").
+
+- **Keyboard tab stops on the first screen at 1280 px:** 37 (before the first simplification) → 28 → **22** (header 7,
+  chips 4, banner 1, results 1, map 9). The map's zoom buttons and attribution links are fixed cost.
+- **Colour rule audit** (`scripts/color_audit.py`): 12 blue/red hex colours in `src/`, all in the design tokens, the marker
+  layer and the optional area/deviation scales; none on controls, links or backgrounds. Two violations were found and
+  fixed on the way (chart series in blue, a navy popup text colour).
+- **Colour vision** (`scripts/cvd_check.py`): the three marker tones (blue / grey / red) stay at least 30.1 ΔE apart in
+  protan, deutan and tritan simulation; the grey area scale's neighbours are 10.9 ΔE apart (lightness only, so identical
+  in every simulation).
+- **axe-core**, desktop and phone, English and Chinese: no violations on the map page, search pill panels (desktop segments
+  and the phone panel), Filters window, menu, accessibility dialog (also with high contrast and larger text), ZIP detail,
+  home detail (calculator open), compare chooser and comparison, affordability and About. It found three real issues on the
+  way: the accessibility dialog was unmounted when the menu closed, the filter chips were outside a landmark, and the
+  phone search button's accessible name left out its visible text. All fixed.
+- **Lighthouse (mobile, production build):** accessibility, best practices and SEO 100 on all URLs tried. Performance on
+  the default URL over nine runs: 87, 85, 86, 98, 97 (this build) and, earlier in the same session while other tools were
+  running, 62, 80, 83. The same two-cluster pattern as before (about 85 or about 98); the outliers coincided with machine
+  load, so treat 85–98 as the range. Area colouring is now off by default, so the hexagon data (about 125 KB) is not
+  fetched on first load.

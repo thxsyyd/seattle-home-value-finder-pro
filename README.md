@@ -9,44 +9,60 @@ follow-up to my INFO 5002 (Introduction to Python) final project at Northeastern
 By Daisy Tang. The graded course version (linear regression, R² 0.647, single-file Leaflet page) is kept unchanged and is
 still reachable from this site's About page.
 
-| First screen (sidebar, controls, results) | Phone, Chinese | Home detail | Phone map |
-|---|---|---|---|
-| ![ZIP search, Show toggle, budget, bedrooms and results beside the sidebar](docs/screenshots/first-screen.png) | ![The same controls on a phone, in Chinese](docs/screenshots/list-mobile-zh.png) | ![One sale, its model estimate, similar sales and price bubbles on the map](docs/screenshots/home-detail.jpg) | ![Map with price bubbles on a phone](docs/screenshots/map-mobile.jpg) |
+| Desktop | Phone: list | Phone: map |
+|---|---|---|
+| ![Header with a three-part search pill, filter chips, cards with a sold-vs-estimate bar, and a quiet map](docs/screenshots/first-screen.png) | ![Cards with a bar showing where each sale sits against the model estimate](docs/screenshots/list-mobile.png) | ![Grey base map with white price pills and small blue, grey and red dots](docs/screenshots/map-mobile.png) |
 
-(The first-screen image is cropped to the sidebar and results panel because the headless browser used for it does not
-draw map tiles.)
+(The desktop image is small because the browser pane used to capture it is small; the phone list was captured with a
+headless browser, which does not draw map tiles, so it is the list only.)
 
 ## What it does
 
 The first screen answers one question: **which homes sold for at least 10% less than a price model expected, within my
-budget?** It opens on Seattle and Bellevue with "Possibly undervalued" and a $500k budget already chosen, and everything
-else sits one step deeper.
+budget?** It opens on Seattle and Bellevue with "Possibly undervalued" and a $500k budget already chosen.
 
-- **Four controls up front:** a ZIP search, *Show* (All sales / Possibly undervalued, with a plain-language explanation),
-  a budget slider and bedrooms. Baths, size, year built, waterfront, minimum price and "show prices in today's dollars"
-  are under *More filters*.
-- **Smooth map instead of hard ZIP edges.** Zoomed out, hexagonal areas (H3) are coloured by median price per square
-  foot, shrunk toward their surroundings where sales are few and greyed out below three sales. Zoomed in you get clusters,
-  dots and `$840k` price bubbles. ZIP-code polygons are an optional layer (*Map layers* button).
+- **A search pill with three parts** (ZIP code, budget ceiling, bedrooms), a row of chips (Filters, Possibly undervalued,
+  Waterfront, Today's dollars), and a Filters window for everything else (minimum price, baths, size, year built, which
+  price basis). The Filters button shows how many homes it will give you.
+- **A quiet map.** The base map is OpenStreetMap data (served by OpenFreeMap) restyled to pale grey-white with thin pale
+  roads and no buildings, rail lines or road names. Every sale is a small dot; the best-ranked ones also get a white
+  price pill (`▼ $350k`), as many as fit. Hover a card and its pill turns dark; sales you have opened turn pale grey.
 - **A model estimate with its error, not just a verdict.** Every sale has a gradient-boosting estimate from a model that
-  never saw it (5-fold, grouped by house), shown as `▼ 25% below model estimate`, plus the model's typical error band.
-- **Links that keep your view.** Budget, bedrooms, filters, map position and layer all live in the URL: copy the link and the
-  same view opens. (Links made before the budget default existed, with no `maxp`, now open with the $500k default; use
+  never saw it (5-fold, grouped by house). Cards have no photo (the data has none), so each leads with a bar from −50% to
+  +50% of the estimate: the grey band is the model's typical error, the tick is the estimate, the dot is what it sold for.
+- **Optional area colouring** (*Map layers*): smoothed hexagons or ZIP areas by price, in shades of grey so they never
+  compete with the blue/red marks. Off by default.
+- **Links that keep your view.** Budget, bedrooms, filters, map position and layers all live in the URL: copy the link and
+  the same view opens. (Links made before the budget default existed, with no `maxp`, now open with the $500k default; use
   `maxp=any` for no limit.)
-- **List and map linked both ways.** Hover a card to highlight its marker and back; selecting a sale is a route
-  (`/home/:id`), so it survives redraws and can be shared.
 - **Today's dollars.** Restate 2014–15 prices with the Seattle Case-Shiller index, the FHFA ZIP index, or your own
   multiplier; a monthly-cost calculator and an income-based price range use the current mortgage rate.
 - **ZIP pages and comparison** (price distribution and size-vs-price charts), similar sales, and an About page whose
-  numbers are read from the generated model card.
-- **A small sidebar:** Map & homes, Affordability, Compare ZIP codes, About & method, plus language and accessibility
-  settings. It collapses to an icon rail on narrower windows (remembered) and becomes a drawer on phones.
-- **English and 简体中文**, switchable from the sidebar (`?lang=zh` in the link keeps the choice; the browser language is
-  the default). All interface text lives in `src/i18n/`; a test checks that every key exists in both languages.
-- **Accessibility settings** (sidebar): text size, high contrast, reduced animation, underlined links. They are
-  saved in the browser only and applied before first paint.
-- **Phone layout, keyboard use, colour-blind-safe palettes.** See [docs/perf-results.md](docs/perf-results.md) for the
-  measurements behind these claims.
+  numbers are read from the generated model card. *Affordability* and *Compare* are links in the header.
+- **English and 简体中文** (`?lang=zh` in the link keeps the choice; the browser language is the default) and
+  **accessibility settings** (text size, high contrast, reduced animation, underlined links) in the menu. All interface
+  text lives in `src/i18n/`; a test checks that every key exists in both languages.
+- **Phone layout:** the search pill collapses to one button, the chips scroll sideways, and a List / Map switch floats at
+  the bottom. See [docs/perf-results.md](docs/perf-results.md) for the measurements behind these claims.
+
+## Design rules
+
+Every colour, weight and control has one job, and `scripts/color_audit.py` fails if that is broken.
+
+| Element | Meaning |
+|---|---|
+| Near-black fill, black outline | Primary action, selected state; a hovered or selected price pill turns near-black |
+| Light-grey outline | A control you can switch |
+| **Blue** (dot, ▼, bar marker, card gap text) | Sold **below** the model estimate. Data only. |
+| **Red** (dot, ▲, bar marker, card gap text) | Sold **above** the model estimate. Data only. |
+| Grey dot | Close to the estimate |
+| Amber | A caveat: the past-sales banner, an "Unusual sale" tag |
+| Shades of grey (optional layer) | Price per square foot, or ZIP price, by lightness only |
+| Bold (600) | Prices and headings; everything else is regular (400) |
+| Small grey text | Secondary facts: specs, dates, sources |
+
+Blue and red never appear on buttons, links or backgrounds, and the marker colours stay at least 30 ΔE apart under
+colour-blindness simulation (`scripts/cvd_check.py`), with arrows and numbers repeating what colour says.
 
 What it is not: the data are *past sales*, not listings; there are no photos, addresses, schools or commute data, and
 "below the model" is not "a bargain" (the model cannot see condition). The page says so, and flags very large gaps as
@@ -79,8 +95,8 @@ The statewide ZIP file is read from the course folder (`config.STATE_ZCTA`); the
 
 ## How it is built
 
-- **Front end:** Vite, React, TypeScript, React Router, MapLibre GL (OpenFreeMap Positron tiles), Recharts (loaded only on
-  chart pages). First screen: about 81 KB of gzipped JavaScript; the lazily loaded map adds about 415 KB, and the other pages and
+- **Front end:** Vite, React, TypeScript, React Router, MapLibre GL (OpenFreeMap Positron tiles, restyled in
+  `src/map/quietStyle.ts`), Recharts (loaded only on chart pages). First screen: about 81 KB of gzipped JavaScript; the lazily loaded map adds about 415 KB, and the other pages and
   charts load on demand.
 - **Data layer:** `src/data/client.ts` caches JSON, merges identical in-flight requests and cancels a shared request only
   when every caller has gone. Per-ZIP chunks load as the (debounced) viewport touches them; chunk arrivals are batched.

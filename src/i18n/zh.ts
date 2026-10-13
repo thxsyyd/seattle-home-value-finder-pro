@@ -14,21 +14,11 @@ export const zh: Record<MsgKey, string> = {
   'lang.label': '语言',
 
   // sidebar
-  'nav.main': '主导航',
-  'nav.g.explore': '探索',
-  'nav.g.tools': '工具',
-  'nav.g.learn': '了解',
-  'nav.g.settings': '设置',
-  'nav.map': '地图和房源',
   'nav.zips': '查找邮编',
   'nav.zipPlaceholder': '邮编，例如 98103',
   'nav.zipNone': '该邮编没有成交记录',
   'nav.compare': '对比',
   'nav.method': '关于和方法',
-  'nav.collapse': '收起侧边栏',
-  'nav.expand': '展开侧边栏',
-  'nav.open': '打开菜单',
-  'nav.close': '关闭菜单',
   'compareChooser.hint': '选择两个邮编，并排比较价格。要比较两套具体的房子，请打开一套房，在“相似成交”下点“与这套房对比”。',
   'compareChooser.a': '第一个邮编',
   'compareChooser.b': '第二个邮编',
@@ -85,16 +75,10 @@ export const zh: Record<MsgKey, string> = {
   'results.subAll': '地图范围内的每一笔成交，以及它与模型估价的比较。',
 
   // first-screen filters
-  'show.label': '显示',
-  'show.all': '全部成交',
   'show.under': '可能被低估',
-  'show.explainSummary': '“可能被低估”是什么意思？',
-  'show.explain': '模型会根据面积、评级和位置，估计每套房该卖多少钱。成交价比估价低至少 10% 的房子，就显示为“可能被低估”。模型看不到房屋状况和装修，所以要自己再核实。',
   'budget.label': '预算上限',
   'budget.value': '不超过 {price}',
   'budget.any': '不限',
-  'more.label': '更多筛选',
-  'more.countN': '更多筛选（{n}）',
   'more.minPrice': '最低价格',
   'more.basis': '价格显示为',
   'map.layers': '地图图层',
@@ -102,7 +86,6 @@ export const zh: Record<MsgKey, string> = {
   // filters
   'filters.label': '筛选',
   'chip.waterfront': '临水',
-  'chip.clear': '清除全部（{n}）',
   'any': '不限',
   'any.cap': '不限',
   'field.noMin': '无下限',
@@ -138,8 +121,6 @@ export const zh: Record<MsgKey, string> = {
 
   // list and cards
   'list.zoom': '请放大地图或选择邮编',
-  'list.inView': '视野内 {n} 套',
-  'list.loaded': '已加载 {n} 套',
   'list.follow': '随地图移动刷新',
   'list.empty': '没有符合条件的房子。试试缩小地图或清除一个筛选条件。',
   'list.zipRow': '{zip} · 中位价 {price} · ${ppsf}/平方英尺 · {n} 笔成交',
