@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router'
+import { Icon } from '../components/Icon'
 import { useT } from '../i18n'
 import { MenuPopover } from './MenuPopover'
 import { SearchPill } from './SearchPill'
@@ -10,7 +11,7 @@ export function Header() {
   return (
     <header className="hdr">
       <Link to={{ pathname: '/', search }} className="hdr-brand" aria-label="Seattle Home Value Finder">
-        <span className="logo" aria-hidden="true" data-initials="SH" />
+        <span className="logo" aria-hidden="true"><Icon name="house" /></span>
         <span className="hdr-name">Seattle Home Value Finder</span>
       </Link>
       <SearchPill />

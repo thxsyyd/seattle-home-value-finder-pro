@@ -8,7 +8,6 @@ a { color: var(--ink); text-underline-offset: 2px; }
 .hdr { position: relative; z-index: 30; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: var(--s-4); padding: var(--s-3) var(--s-5); background: var(--surface); border-bottom: 1px solid var(--hairline); }
 .hdr-brand { justify-self: start; display: inline-flex; align-items: center; gap: var(--s-2); color: var(--ink); text-decoration: none; font-weight: var(--fw-strong); min-height: 44px; }
 .logo { flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: var(--r-8); background: var(--ink); color: #fff; font-size: 0.8125rem; letter-spacing: 0.02em; }
-.logo::before { content: attr(data-initials); }
 .hdr-right { justify-self: end; display: flex; align-items: center; gap: var(--s-1); }
 .hdr-link { padding: 10px 12px; border-radius: var(--r-pill); font-size: var(--fs-small); font-weight: var(--fw-strong); color: var(--ink); text-decoration: none; }
 .hdr-link:hover { background: var(--surface-2); }
@@ -46,7 +45,7 @@ a { color: var(--ink); text-underline-offset: 2px; }
 .explore { display: flex; flex-direction: column; height: 100%; min-height: 0; }
 .disclaimer { flex: none; padding: var(--s-2) var(--s-5); background: var(--notice-bg); border-bottom: 1px solid var(--notice-border); color: var(--notice-ink); font-size: var(--fs-small); }
 .disclaimer a, .disclaimer .linklike { color: var(--notice-ink); }
-.split { flex: 1; min-height: 0; display: grid; grid-template-columns: minmax(360px, 54%) minmax(0, 1fr); }
+.split { flex: 1; min-height: 0; display: grid; grid-template-columns: clamp(320px, var(--panel-w, 54%), calc(100% - 332px)) 12px minmax(0, 1fr); }
 .panel { display: flex; flex-direction: column; min-height: 0; overflow: hidden; background: var(--surface); }
 .panel-pad { padding: var(--s-5); overflow: auto; flex: 1; min-height: 0; }
 .mapwrap { position: relative; min-height: 0; margin: var(--s-3) var(--s-5) var(--s-5) 0; border-radius: var(--r-16); overflow: hidden; background: var(--surface-2); }
@@ -81,6 +80,9 @@ a { color: var(--ink); text-underline-offset: 2px; }
 
 /* ===== cards ===== */
 .grid { display: grid; gap: var(--s-5) var(--s-4); }
+.cards { grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); list-style: none; margin: 0; padding: 0; }
+.more-row { display: flex; align-items: center; justify-content: space-between; gap: var(--s-3); margin: var(--s-5) 0 var(--s-2); }
+.more-row .hint { margin: 0; }
 .card { display: grid; grid-template-rows: auto auto auto auto auto; align-content: start; gap: 2px; padding: 0; border: 0; border-radius: var(--r-12); background: transparent; color: var(--ink); text-decoration: none; }
 .card-visual { position: relative; display: grid; align-items: center; height: 108px; margin-bottom: var(--s-2); padding: 0 var(--s-4); border-radius: var(--r-12); background: var(--surface-2); transition: box-shadow 0.15s, transform 0.15s; }
 .card:hover .card-visual, .card.is-hover .card-visual { box-shadow: var(--shadow-2); transform: translateY(-2px); }
@@ -233,3 +235,12 @@ html[data-contrast='high'] .badge { background: #fff; border: 2px solid #000; co
   .viewtoggle button { min-height: 44px; min-width: 88px; border: 0; border-radius: var(--r-pill); background: transparent; color: #fff; font: inherit; cursor: pointer; }
   .viewtoggle button[aria-pressed='true'] { background: #fff; color: var(--ink); }
 }
+
+/* draggable divider between the list and the map */
+.splitter { position: relative; margin: var(--s-3) 0 var(--s-5); cursor: col-resize; touch-action: none; display: grid; place-items: center; }
+.splitter::before { content: ''; position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: var(--hairline); }
+.splitter:hover::before, .splitter:focus-visible::before { width: 2px; margin-left: -1px; background: var(--ink); }
+.splitter-grip { position: relative; width: 6px; height: 44px; border-radius: var(--r-pill); background: var(--hairline); box-shadow: 0 0 0 3px var(--surface); }
+.splitter:hover .splitter-grip, .splitter:focus-visible .splitter-grip { background: var(--ink); }
+.splitter:focus-visible { outline: none; }
+@media (max-width: 767px) { .splitter { display: none; } .split { grid-template-columns: minmax(0, 1fr); } .cards { grid-template-columns: minmax(0, 1fr); } }

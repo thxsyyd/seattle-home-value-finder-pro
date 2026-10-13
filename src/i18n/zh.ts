@@ -109,6 +109,13 @@ export const zh: Record<MsgKey, string> = {
   'size.label': '居住面积（平方英尺）',
   'built.label': '建造年份',
 
+  // list paging and divider
+  'list.showing': '显示 {total} 套中的 {shown} 套：这个地图范围内最相关的。',
+  'list.showingAll': '显示已加载的 {total} 套中的 {shown} 套。',
+  'list.more': '再显示 {n} 套',
+  'split.label': '调整列表和地图的宽度',
+  'split.hint': '拖动调整宽度，双击恢复。',
+
   // cards
   'card.in': '邮编 {zip} 的房子',
   'card.specs': '{beds} 卧 · {baths} 卫 · {sqft} 平方英尺',

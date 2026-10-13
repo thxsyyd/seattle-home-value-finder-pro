@@ -12,6 +12,7 @@ const PATHS = {
   right: 'M9 6l6 6-6 6',
   search: 'M11 18a7 7 0 100-14 7 7 0 000 14zM20 20l-4-4',
   layers: 'M12 3l9 5-9 5-9-5zM3 13l9 5 9-5',
+  house: 'M4 11l8-7 8 7M6 9.5V20h4.5v-5.5h3V20H18V9.5',
   filters: 'M4 7h9M17 7h3M4 17h3M11 17h9M15 5v4M9 15v4',
   star: 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z',
 } as const

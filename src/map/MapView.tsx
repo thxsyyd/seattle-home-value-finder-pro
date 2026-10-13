@@ -41,6 +41,8 @@ interface Props {
   /** filtered sales for every zip near the viewport (drawn as dots plus the best-ranked price pills) */
   homes: Home[]
   selected: Home | null
+  /** keys of the sales currently shown as cards, best first */
+  listed: string[]
   priceOf: PriceOf
   onSelectHome: (key: string) => void
   /** `persist` is false for the initial load, so merely opening the page doesn't rewrite the URL */
@@ -68,7 +70,7 @@ function popupNode(title: string, lines: string[]): HTMLElement {
   return el
 }
 
-export default function MapView({ index, filters, homes, selected, priceOf, onSelectHome, onViewChange }: Props) {
+export default function MapView({ index, filters, homes, selected, listed, priceOf, onSelectHome, onViewChange }: Props) {
   const box = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MlMap | null>(null)
   const [ready, setReady] = useState(false)
@@ -111,6 +113,9 @@ export default function MapView({ index, filters, homes, selected, priceOf, onSe
     mapRef.current = map
     if (import.meta.env.DEV || new URLSearchParams(location.search).get('debug') === '1') (window as unknown as { __map?: MlMap }).__map = map // handle for scripted checks
     map.addControl(new NavigationControl({ showCompass: false }), 'top-right')
+    // the list/map divider can be dragged, so follow the container's size as well as the window's
+    const ro = new ResizeObserver(() => map.resize())
+    if (box.current) ro.observe(box.current)
     map.on('error', (e) => {
       if (!map.isStyleLoaded() && !map.getStyle()) setFailed(true)
       console.warn('map error', e.error?.message)
@@ -157,6 +162,7 @@ export default function MapView({ index, filters, homes, selected, priceOf, onSe
         .addTo(map)
     })
     return () => {
+      ro.disconnect()
       map.remove()
       mapRef.current = null
       setReady(false)
@@ -207,8 +213,8 @@ export default function MapView({ index, filters, homes, selected, priceOf, onSe
   useEffect(() => {
     const map = mapRef.current
     if (!ready || !map || !band) return
-    setHomes(map, homes, band, priceOf)
-  }, [ready, homes, band, priceOf])
+    setHomes(map, homes, band, priceOf, listed)
+  }, [ready, homes, band, priceOf, listed])
   // selected home: ring + bubble, and bring it into view if it is outside the current viewport
   useEffect(() => {
     const map = mapRef.current

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useMemo, useState } from 'react'
+import { lazy, Suspense, useCallback, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { Outlet, useLocation, useMatch, useNavigate } from 'react-router'
 import { DisclaimerBanner } from '../components/DisclaimerBanner'
 import { FilterChips } from '../layout/FilterChips'
@@ -10,6 +10,7 @@ import { useViewportHomes } from '../data/useViewportHomes'
 import { viewBbox } from '../lib/geo'
 import { makePriceOf } from '../lib/priceIndex'
 import { filterHomes, inBbox, sortHomes, type PriceOf } from '../lib/query'
+import { Splitter } from '../components/Splitter'
 import { LayersButton } from '../map/LayersButton'
 import type { ViewState } from '../map/MapView'
 import { DEFAULT_VIEW } from '../map/view'
@@ -20,6 +21,20 @@ const MapView = lazy(() => import('../map/MapView'))
 /** Below this zoom a viewport spans too many ZIPs to list individual sales. */
 export const MIN_LIST_ZOOM = 10.5
 
+/** The list opens with this many best matches for the map area; "Show more" adds STEP at a time. */
+export const PAGE = 4
+export const STEP = 8
+const PANEL_KEY = 'hvf.panelw'
+
+function readPanelWidth(): number | null {
+  try {
+    const v = Number(localStorage.getItem(PANEL_KEY))
+    return Number.isFinite(v) && v > 0 ? v : null
+  } catch {
+    return null
+  }
+}
+
 export interface ExploreContext {
   index: IndexData | undefined
   view: ViewState | null
@@ -27,6 +42,10 @@ export interface ExploreContext {
   filtered: Home[]
   /** filtered sales in the viewport (or all loaded ones when "follow map" is off), sorted */
   rows: Home[]
+  /** the best matches that are currently shown as cards (and prioritised on the map) */
+  listed: Home[]
+  shown: number
+  showMore: () => void
   loading: boolean
   zoomedIn: boolean
   /** price used for display, filtering and sorting (as sold, or restated to today's dollars) */
@@ -62,6 +81,28 @@ export function Explore() {
     [filtered, bbox, f.sort, f.follow, priceOf],
   )
 
+  // Cards show only the best matches for the current map area; panning or zooming, or changing a filter or the sort, starts again at PAGE.
+  const sig = JSON.stringify([bbox.map((n) => Math.round(n * 1000)), filterKey, f.sort, f.show, f.adj, f.follow])
+  const [more, setMore] = useState({ sig: '', n: PAGE })
+  const shown = more.sig === sig ? more.n : PAGE
+  const showMore = useCallback(() => setMore({ sig, n: shown + STEP }), [sig, shown])
+  const listed = useMemo(() => rows.slice(0, shown), [rows, shown])
+  const listedKeys = useMemo(() => listed.map((h) => h.key), [listed])
+
+  // draggable divider between the list and the map
+  const splitRef = useRef<HTMLElement>(null)
+  const [panelW, setPanelW] = useState<number | null>(readPanelWidth)
+  const onPanelWidth = useCallback((px: number | null, final: boolean) => {
+    setPanelW(px)
+    if (!final) return
+    try {
+      if (px === null) localStorage.removeItem(PANEL_KEY)
+      else localStorage.setItem(PANEL_KEY, String(px))
+    } catch {
+      /* ignore */
+    }
+  }, [])
+
   const homeMatch = useMatch('/home/:id')
   const selected = useHome(homeMatch?.params.id, index.data).data ?? null
 
@@ -75,20 +116,21 @@ export function Explore() {
   const onSelectHome = useCallback((key: string) => navigate({ pathname: `/home/${key}`, search }), [navigate, search])
 
   const detail = pathname !== '/'
-  const ctx: ExploreContext = { index: index.data, view, filtered, rows, loading, zoomedIn, priceOf }
+  const ctx: ExploreContext = { index: index.data, view, filtered, rows, listed, shown, showMore, loading, zoomedIn, priceOf }
 
   return (
     <div className="explore" data-view={filters.view} data-detail={detail}>
       <FilterChips filters={filters} index={index.data} count={rows.length} onChange={(patch) => setFilters(patch)} />
       <DisclaimerBanner range={index.data?.dataRange} />
-      <main className="split">
+      <main className="split" ref={splitRef} style={{ '--panel-w': panelW ? `${panelW}px` : '54%' } as CSSProperties}>
         <h1 className="sr-only">{t('h1')}</h1>
         <section id="main-content" className="panel" aria-label={t('panel.results')} tabIndex={-1}>
           <Outlet context={ctx} />
         </section>
+        <Splitter container={splitRef} value={panelW} onChange={onPanelWidth} />
         <section className="mapwrap" aria-label={t('map.region')}>
           <Suspense fallback={<p style={{ padding: 'var(--s-5)' }}>{t('map.loading')}</p>}>
-            <MapView index={index.data} filters={filters} homes={filtered} priceOf={priceOf} selected={selected} onSelectHome={onSelectHome} onViewChange={onViewChange} />
+            <MapView index={index.data} filters={filters} homes={filtered} listed={listedKeys} priceOf={priceOf} selected={selected} onSelectHome={onSelectHome} onViewChange={onViewChange} />
           </Suspense>
           <LayersButton />
           <label className="mapfollow">

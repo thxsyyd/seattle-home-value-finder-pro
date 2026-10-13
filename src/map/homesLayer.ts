@@ -93,15 +93,20 @@ const point = (h: Home, props: Record<string, unknown>) => ({
   type: 'Feature' as const, properties: props, geometry: { type: 'Point' as const, coordinates: [h.lon, h.lat] },
 })
 
-export function homesGeoJSON(homes: Home[], band: Band, priceOf: PriceOf) {
+/** `listed` are the sales shown as cards: their pills get first claim on space so list and map always agree. */
+export function homesGeoJSON(homes: Home[], band: Band, priceOf: PriceOf, listed: string[] = []) {
+  const order = new Map(listed.map((k, i) => [k, i]))
   return {
     type: 'FeatureCollection' as const,
-    features: homes.map((h) => point(h, { key: h.key, rank: devRank(h), ...labelFor(h, band, priceOf) })),
+    features: homes.map((h) => {
+      const i = order.get(h.key)
+      return point(h, { key: h.key, rank: i === undefined ? devRank(h) : -100 + i, ...labelFor(h, band, priceOf) })
+    }),
   }
 }
 
-export function setHomes(map: MlMap, homes: Home[], band: Band, priceOf: PriceOf): void {
-  ;(map.getSource(HL.src) as GeoJSONSource | undefined)?.setData(homesGeoJSON(homes, band, priceOf) as never)
+export function setHomes(map: MlMap, homes: Home[], band: Band, priceOf: PriceOf, listed: string[] = []): void {
+  ;(map.getSource(HL.src) as GeoJSONSource | undefined)?.setData(homesGeoJSON(homes, band, priceOf, listed) as never)
 }
 
 export function setSelected(map: MlMap, h: Home | null, band: Band, priceOf: PriceOf): void {

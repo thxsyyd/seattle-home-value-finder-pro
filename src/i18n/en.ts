@@ -107,6 +107,13 @@ export const en = {
   'size.label': 'Living area (sq ft)',
   'built.label': 'Year built',
 
+  // list paging and divider
+  'list.showing': 'Showing {shown} of {total}: the best matches for this map area.',
+  'list.showingAll': 'Showing {shown} of {total} loaded homes.',
+  'list.more': 'Show {n} more',
+  'split.label': 'Resize list and map',
+  'split.hint': 'Drag to resize. Double-click to reset.',
+
   // cards
   'card.in': 'Home in ZIP {zip}',
   'card.specs': '{beds} bd · {baths} ba · {sqft} sqft',
