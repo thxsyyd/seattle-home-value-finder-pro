@@ -71,7 +71,7 @@ export const zh: Record<MsgKey, string> = {
   'chip.today': '今日价',
   'results.under': '{n} 套可能被低估的房子',
   'results.all': '{n} 套成交房源',
-  'results.subUnder': '地图范围内：成交价至少比模型预计的同类房价低 10%。数据是 2014–15 年的成交。',
+  'results.subUnder': '地图范围内，成交价比模型估价低至少 10%。2014–15 年成交。',
   'results.subAll': '地图范围内的每一笔成交，以及它与模型估价的比较。',
 
   // first-screen filters
@@ -319,8 +319,8 @@ export const zh: Record<MsgKey, string> = {
   // added: first-time-user pass
   'explain.q': '什么是“模型估价”？',
   'explain.a': '电脑模型根据每套房的面积、房龄、品质和位置，以及附近类似房子的成交价，估算这套房“应该”卖多少钱。如果实际成交价低很多，就标为“可能被低估”。模型看不到房屋状况和装修，所以要自己核实。',
-  'intro.text': '找出成交价低于模型预期的西雅图房子（2014–15 年成交）。点地图上的点或左边的卡片，看它为什么被标出来。',
-  'intro.close': '知道了',
+  'intro.text': '找出成交价低于模型预期的房子。点地图上的点或左边的卡片看原因。',
+  'intro.close': '关闭',
   'card.axisLow': '成交更低',
   'card.axisHigh': '成交更高',
   'card.today': '按今天的价格约 {price}',

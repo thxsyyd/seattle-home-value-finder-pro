@@ -24,6 +24,45 @@ const toneColor = (below: string, above: string, near: string): ExpressionSpecif
 const hover: ExpressionSpecification = ['boolean', ['feature-state', 'hover'], false]
 const noneKey: ExpressionSpecification = ['==', ['get', 'key'], '__none__']
 
+// Which pills are drawn: the key filter each layer wants, and the "far enough from the map edge" test that
+// applies to all of them. Kept here because there is one map, and both halves change at different times.
+let edgeFilter: ExpressionSpecification | null = null
+let viewedKeys: string[] = []
+let hoverKey: string | null = null
+let selectedKey: string | null = null
+const inEdge = (f: ExpressionSpecification): ExpressionSpecification =>
+  (edgeFilter ? (['all', f, edgeFilter] as unknown as ExpressionSpecification) : f)
+const keyIn = (keys: string[]): ExpressionSpecification =>
+  (keys.length ? (['in', ['get', 'key'], ['literal', keys]] as unknown as ExpressionSpecification) : noneKey)
+
+function applyPillFilters(map: MlMap): void {
+  if (map.getLayer(HL.pills)) map.setFilter(HL.pills, edgeFilter)
+  if (map.getLayer(HL.pillsViewed)) map.setFilter(HL.pillsViewed, inEdge(keyIn(viewedKeys)))
+  const hovered = hoverKey && hoverKey !== selectedKey ? keyIn([hoverKey]) : noneKey
+  if (map.getLayer(HL.pillsHover)) map.setFilter(HL.pillsHover, inEdge(hovered))
+  if (map.getLayer(HL.simHover)) map.setFilter(HL.simHover, hovered)
+}
+
+/**
+ * Hide price pills whose point sits within `inset` pixels of the map edge. MapLibre happily draws a pill that
+ * runs off the canvas, and a half-cut price reads as a different number, so they are dropped instead.
+ */
+export function setPillEdge(map: MlMap, inset = 64): void {
+  const { width, height } = map.getCanvas().getBoundingClientRect()
+  if (width <= inset * 2 || height <= inset * 2) {
+    edgeFilter = null // too small to inset: better a clipped pill than none at all
+  } else {
+    const corners: [number, number][] = [[inset, inset], [width - inset, inset], [width - inset, height - inset], [inset, height - inset]]
+    const ring = corners.map((c) => {
+      const ll = map.unproject(c)
+      return [ll.lng, ll.lat]
+    })
+    ring.push(ring[0])
+    edgeFilter = ['within', { type: 'Polygon', coordinates: [ring] }] as unknown as ExpressionSpecification
+  }
+  applyPillFilters(map)
+}
+
 const pillLayout = (icon: string, size = 13) => ({
   'icon-image': icon, 'icon-text-fit': 'both' as const, 'icon-text-fit-padding': [0, 0, 0, 0] as [number, number, number, number],
   'text-font': ['Noto Sans Bold'], 'text-size': size, 'text-padding': 2,
@@ -124,6 +163,8 @@ export function setHomes(map: MlMap, homes: Home[], band: Band, priceOf: PriceOf
 export function setSelected(map: MlMap, h: Home | null, band: Band, priceOf: PriceOf): void {
   const data = h ? { type: 'FeatureCollection', features: [point(h, labelFor(h, band, priceOf))] } : empty
   ;(map.getSource(HL.selSrc) as GeoJSONSource | undefined)?.setData(data as never)
+  selectedKey = h?.key ?? null
+  applyPillFilters(map)
 }
 
 export function setSimilar(map: MlMap, homes: Home[], band: Band, priceOf: PriceOf): void {
@@ -133,11 +174,12 @@ export function setSimilar(map: MlMap, homes: Home[], band: Band, priceOf: Price
 
 /** The pill drawn dark while its card (or the pill itself) is hovered. */
 export function setHoveredPill(map: MlMap, key: string | null): void {
-  if (map.getLayer(HL.pillsHover)) map.setFilter(HL.pillsHover, key ? ['==', ['get', 'key'], key] : noneKey)
-  if (map.getLayer(HL.simHover)) map.setFilter(HL.simHover, key ? ['==', ['get', 'key'], key] : noneKey)
+  hoverKey = key
+  applyPillFilters(map)
 }
 
 /** Pills of sales that have already been opened turn pale grey. */
 export function setViewedPills(map: MlMap, keys: string[]): void {
-  if (map.getLayer(HL.pillsViewed)) map.setFilter(HL.pillsViewed, keys.length ? ['in', ['get', 'key'], ['literal', keys]] : noneKey)
+  viewedKeys = keys
+  applyPillFilters(map)
 }

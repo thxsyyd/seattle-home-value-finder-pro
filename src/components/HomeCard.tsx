@@ -42,7 +42,7 @@ export const HomeCard = memo(function HomeCard({ home: h, band, hovered, price, 
     >
       <div className="card-visual">
         {(d.unusual || (d.tone === 'below' && !hideUnderBadge)) && <span className={`card-badge${d.unusual ? ' notice' : ''}`}>{d.unusual ? t('card.unusual') : t('show.under')}</span>}
-        <RangeBar dev={h.dev} band={band} />
+        <RangeBar dev={h.dev} band={band} compact />
       </div>
       <div className="card-row">
         <span className="card-title">{t('card.in', { zip: h.zip })}</span>

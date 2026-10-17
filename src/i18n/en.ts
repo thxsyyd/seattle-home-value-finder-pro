@@ -69,7 +69,7 @@ export const en = {
   'chip.today': 'Today’s dollars',
   'results.under': '{n} possibly undervalued homes',
   'results.all': '{n} homes sold',
-  'results.subUnder': 'In the map area: sold at least 10% below what the model expects a similar home to cost. Sales are from 2014–15.',
+  'results.subUnder': 'Sold at least 10% below the model’s estimate, in the map area. 2014–15 sales.',
   'results.subAll': 'Every sale in the map area, and how it compares with the model’s estimate.',
 
   // first-screen filters
@@ -144,7 +144,7 @@ export const en = {
   // home detail
   'back.results': '← Back to results',
   'home.notFound': 'We couldn’t find that sale. It may be from an older version of the link.',
-  'home.sold': 'Sold',
+  'home.sold': 'Sale date',
   'home.estimate': 'Model estimate',
   'home.estimateVal': '{est}',
   'home.gap': 'Difference from estimate',
@@ -317,8 +317,8 @@ export const en = {
   // added: first-time-user pass
   'explain.q': 'What is a “model estimate”?',
   'explain.a': 'A computer model looked at each home’s size, age, quality and location, and at what similar homes nearby sold for, then estimated what the home should have sold for. If the real price was much lower, the home is “possibly undervalued”. The model can’t see condition or finishes, so check before trusting it.',
-  'intro.text': 'Find Seattle-area homes that sold for less than a model expects (2014–15 sales). Click a dot on the map or a card on the left to see why.',
-  'intro.close': 'Got it',
+  'intro.text': 'Homes that sold for less than a model expects. Click a dot or a card to see why.',
+  'intro.close': 'Dismiss',
   'card.axisLow': 'Sold for less',
   'card.axisHigh': 'Sold for more',
   'card.today': '≈ {price} in today’s dollars',
@@ -358,7 +358,7 @@ export const en = {
 
   // added: first-time-user pass
   'home.verdict.exact': 'Sold for {price}, almost exactly the model’s estimate of {est}.',
-  'home.soldPrice': 'Sold for',
+  'home.soldPrice': 'Sale price',
 
   // added: first-time-user pass
   'compare.gradeCond': 'Build quality / condition',

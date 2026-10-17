@@ -149,9 +149,6 @@ export function Explore() {
             <MapView index={index.data} filters={filters} homes={filtered} listed={listedKeys} similar={similar ?? NO_HOMES} priceOf={priceOf} selected={selected} onSelectHome={onSelectHome} onViewChange={onViewChange} />
           </Suspense>
           <LayersButton />
-          <label className="mapfollow">
-            <input type="checkbox" checked={filters.follow} onChange={(e) => setFilters({ follow: e.target.checked })} /> {t('list.follow')}
-          </label>
         </section>
       </main>
       <nav className="viewtoggle" aria-label={t('view.toggle')}>

@@ -8,7 +8,7 @@ import { barGeometry } from '../lib/rangeBar'
  * typical error, the tick in the middle is the estimate itself, and the dot is what the home sold for
  * (blue = below, red = above, grey = close; the same meaning as everywhere else).
  */
-export function RangeBar({ dev, band }: { dev: number; band: IndexData['model']['error_overall'] }) {
+export function RangeBar({ dev, band, compact }: { dev: number; band: IndexData['model']['error_overall']; compact?: boolean }) {
   const t = useT()
   const g = barGeometry(dev, band)
   const tone = dev < band.p10 ? 'below' : dev > band.p90 ? 'above' : 'near'
@@ -21,9 +21,9 @@ export function RangeBar({ dev, band }: { dev: number; band: IndexData['model'][
         <span className={`rbar-dot rbar-${tone}${g.clamped ? ' clamped' : ''}`} style={{ left: `${g.marker}%` }} />
       </div>
       <div className="rbar-axis" aria-hidden="true">
-        <span>{t('card.axisLow')}</span>
-        <span>{t('card.estimate')}</span>
-        <span>{t('card.axisHigh')}</span>
+        {!compact && <span>{t('card.axisLow')}</span>}
+        <span className="rbar-mid">{t('card.estimate')}</span>
+        {!compact && <span>{t('card.axisHigh')}</span>}
       </div>
     </div>
   )

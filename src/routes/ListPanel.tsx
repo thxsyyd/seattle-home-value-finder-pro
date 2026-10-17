@@ -33,10 +33,12 @@ function Intro() {
     }
   }
   return (
-    <div className="intro">
-      <p>{t('intro.text')}</p>
-      <button type="button" className="secondary" onClick={close}>{t('intro.close')}</button>
-    </div>
+    <p className="intro">
+      <span>{t('intro.text')}</span>
+      <button type="button" className="intro-x" aria-label={t('intro.close')} onClick={close}>
+        <span aria-hidden="true">×</span>
+      </button>
+    </p>
   )
 }
 
@@ -69,23 +71,30 @@ export function ListPanel() {
     <>
       {zoomedIn && <Intro />}
       <div className="results-head">
-        <h2 className="results-title" aria-live="polite">
-          {!zoomedIn ? t('list.zoom') : loading && rows.length === 0 ? t('loading') : t(f.show === 'under' && f.dv === undefined ? 'results.under' : 'results.all', { n: rows.length.toLocaleString() })}
-        </h2>
-        <p className="results-sub">{t(f.show === 'under' && f.dv === undefined ? 'results.subUnder' : 'results.subAll')}</p>
-        <details className="explain">
-          <summary>{t('explain.q')}</summary>
-          <p>{t('explain.a')}</p>
-        </details>
-        <label className="sortbox">
-          {t('sort.label')}{' '}
-          <select value={f.sort} onChange={(e) => setFilters({ sort: e.target.value as SortKey })}>
-            <option value="dev">{t('sort.dev')}</option>
-            <option value="price">{t('sort.price')}</option>
-            <option value="ppsf">{t('sort.ppsf')}</option>
-            <option value="newest">{t('sort.newest')}</option>
-            <option value="sqft">{t('sort.sqft')}</option>
-          </select>
+        <div className="results-top">
+          <h2 className="results-title" aria-live="polite">
+            {!zoomedIn ? t('list.zoom') : loading && rows.length === 0 ? t('loading') : t(f.show === 'under' && f.dv === undefined ? 'results.under' : 'results.all', { n: rows.length.toLocaleString() })}
+          </h2>
+          <label className="sortbox">
+            {t('sort.label')}{' '}
+            <select value={f.sort} onChange={(e) => setFilters({ sort: e.target.value as SortKey })}>
+              <option value="dev">{t('sort.dev')}</option>
+              <option value="price">{t('sort.price')}</option>
+              <option value="ppsf">{t('sort.ppsf')}</option>
+              <option value="newest">{t('sort.newest')}</option>
+              <option value="sqft">{t('sort.sqft')}</option>
+            </select>
+          </label>
+        </div>
+        <p className="results-sub">
+          {t(f.show === 'under' && f.dv === undefined ? 'results.subUnder' : 'results.subAll')}{' '}
+          <details className="explain">
+            <summary>{t('explain.q')}</summary>
+            <span>{t('explain.a')}</span>
+          </details>
+        </p>
+        <label className="followbox">
+          <input type="checkbox" checked={f.follow} onChange={(e) => setFilters({ follow: e.target.checked })} /> {t('list.follow')}
         </label>
       </div>
       <div ref={scroller} className="list-scroll" onScroll={(e) => { listMemory.scrollTop = e.currentTarget.scrollTop }}>

@@ -14,7 +14,7 @@ import { reducedMotion } from '../a11y/prefs'
 import { setHovered, useHover } from '../state/hoverStore'
 import { Legend } from './Legend'
 import { applyQuietStyle } from './quietStyle'
-import { addHomeLayers, HL, setHomes, setHoveredPill, setSelected, setSimilar, setViewedPills } from './homesLayer'
+import { addHomeLayers, HL, setHomes, setHoveredPill, setPillEdge, setSelected, setSimilar, setViewedPills } from './homesLayer'
 import { DEFAULT_VIEW, webglSupported } from './view'
 import { addRegionLayers, IDS, setLayerMode, setMetric, setSourceData } from './layers'
 
@@ -72,6 +72,17 @@ function popupNode(title: string, lines: string[]): HTMLElement {
   return el
 }
 
+/**
+ * Is this point far enough inside the canvas to show its dark pill and ring? The pill is drawn above the point,
+ * and the attribution sits bottom-right, so "inside the bounds" is not enough — it has to have room.
+ */
+function wellInside(map: MlMap, lon: number, lat: number): boolean {
+  const { width, height } = map.getCanvas().getBoundingClientRect()
+  const p = map.project([lon, lat])
+  const m = 80
+  return p.x > m && p.x < width - m && p.y > m + 20 && p.y < height - m
+}
+
 export default function MapView({ index, filters, homes, selected, listed, similar, priceOf, onSelectHome, onViewChange }: Props) {
   const box = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MlMap | null>(null)
@@ -116,7 +127,10 @@ export default function MapView({ index, filters, homes, selected, listed, simil
     if (import.meta.env.DEV || new URLSearchParams(location.search).get('debug') === '1') (window as unknown as { __map?: MlMap }).__map = map // handle for scripted checks
     map.addControl(new NavigationControl({ showCompass: false }), 'top-right')
     // the list/map divider can be dragged, so follow the container's size as well as the window's
-    const ro = new ResizeObserver(() => map.resize())
+    const ro = new ResizeObserver(() => {
+      map.resize()
+      if (map.isStyleLoaded()) setPillEdge(map)
+    })
     if (box.current) ro.observe(box.current)
     map.on('error', (e) => {
       if (!map.isStyleLoaded() && !map.getStyle()) setFailed(true)
@@ -127,10 +141,12 @@ export default function MapView({ index, filters, homes, selected, listed, simil
       addRegionLayers(map, initial.current.metric)
       addHomeLayers(map)
       setLayerMode(map, initial.current.layer)
+      setPillEdge(map)
       setReady(true)
       onView.current(readView(map), false)
     })
     map.on('moveend', () => {
+      setPillEdge(map)
       setZoom(map.getZoom())
       onView.current(readView(map), true)
     })
@@ -222,7 +238,7 @@ export default function MapView({ index, filters, homes, selected, listed, simil
     const map = mapRef.current
     if (!ready || !map || !band) return
     setSelected(map, selected, band, priceOf)
-    if (selected && !map.getBounds().contains([selected.lon, selected.lat])) {
+    if (selected && !wellInside(map, selected.lon, selected.lat)) {
       map.easeTo({ center: [selected.lon, selected.lat], zoom: Math.max(map.getZoom(), 14), duration: reducedMotion() ? 0 : 600 })
     }
   }, [ready, selected, band, priceOf])
