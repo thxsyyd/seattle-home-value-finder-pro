@@ -74,8 +74,9 @@ export function About() {
           {m && `${zh ? '' : ' '}${t('about.bias.overlap', { n: m.top200_overlap }).trim()}`}
         </p>
         <h3>{t('about.deal.h')}</h3>
+        <p>{t('about.deal.lead')}</p>
         <ul>
-          <li>{t('about.deal.1')}</li>
+          {m && <li>{t('about.deal.1', { p10: signedPct(m.error_overall.p10) })}</li>}
           <li>{t('about.deal.2')}</li>
           <li>{t('about.deal.3')}</li>
         </ul>
