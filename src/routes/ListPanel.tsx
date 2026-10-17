@@ -91,6 +91,8 @@ export function ListPanel() {
           <details className="explain">
             <summary>{t('explain.q')}</summary>
             <span>{t('explain.a')}</span>
+            <span>{t('explain.b')}</span>
+            <span>{t('explain.c')}</span>
           </details>
         </p>
         <label className="followbox">

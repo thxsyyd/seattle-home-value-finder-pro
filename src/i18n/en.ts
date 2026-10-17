@@ -69,7 +69,7 @@ export const en = {
   'chip.today': 'Today’s dollars',
   'results.under': '{n} possibly undervalued homes',
   'results.all': '{n} homes sold',
-  'results.subUnder': 'A model estimates what each home should have sold for. These sold below that estimate by more than the model’s usual error — in the map area, 2014–15 sales.',
+  'results.subUnder': 'A model estimates what each home should have sold for. In the map area, these sold below it by more than the model’s usual error — worth a closer look, not proof of a bargain.',
   'results.subAll': 'Every sale in the map area. A model estimates what each home should have sold for; the colour shows how the price compared.',
 
   // first-screen filters
@@ -315,8 +315,10 @@ export const en = {
   'about.disclaimer': 'This is an educational project, not financial or investment advice.',
 
   // added: first-time-user pass
-  'explain.q': 'What is a “model estimate”?',
-  'explain.a': 'A computer model looked at each home’s size, age, quality and location, and at what similar homes nearby sold for, then estimated what it should have sold for. A home counts as “possibly undervalued” when it sold further below that estimate than the model is usually wrong by. The model cannot see condition or finishes, so check before trusting it.',
+  'explain.q': 'What does “possibly undervalued” mean?',
+  'explain.a': 'A model estimated what each home should have sold for, from its size, age, build quality and location, and from what similar homes nearby sold for. These sold further below that estimate than the model is usually wrong by.',
+  'explain.c': 'These are 2014–15 sales, not homes for sale, so the useful part is the pattern: which areas and which kinds of home tend to sell below the estimate.',
+  'explain.b': 'A home can sell for that much less because it needed work, because the seller was in a hurry, or because it changed hands between relatives — or simply because the model missed something it cannot see. It knows nothing about condition, finishes or anything agreed off-market.',
   'intro.text': 'Homes that sold for less than a model expects. Click a dot or a card to see why.',
   'intro.close': 'Dismiss',
   'card.axisLow': 'Sold for less',
