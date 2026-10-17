@@ -5,9 +5,10 @@ import { legendItems, NO_DATA } from './colors'
 import { TONE } from './homesLayer'
 
 /** Bottom-left key. Dots are always explained; the area scale is added only while an area layer is on. */
-export function Legend({ metric, layer }: { metric: MetricKey; layer: LayerKey }) {
+export function Legend({ metric, layer, lo, hi }: { metric: MetricKey; layer: LayerKey; lo?: string; hi?: string }) {
   const t = useT()
-  const [open, setOpen] = useState(false)
+  // the colour key is the only way to read the map, so it starts open; it is one wrapping row, not a panel
+  const [open, setOpen] = useState(true)
   const areas = layer !== 'none'
   const title = areas ? t(`legend.${metric}`) : t('legend.dots')
   const dots: [string, string, string][] = [
@@ -29,7 +30,7 @@ export function Legend({ metric, layer }: { metric: MetricKey; layer: LayerKey }
       </figcaption>
       {open && (
         <>
-          <ul>
+          <ul className="legend-row">
             {dots.map(([color, mark, text]) => (
               <li key={text}>
                 <span aria-hidden="true" className="dot" style={{ background: color }} />
@@ -38,6 +39,7 @@ export function Legend({ metric, layer }: { metric: MetricKey; layer: LayerKey }
               </li>
             ))}
           </ul>
+          {lo && hi && <p className="legend-sub">{t('legend.band', { lo, hi })}</p>}
           {areas && (
             <>
               <p className="legend-sub">{t(`legend.${metric}`)}</p>

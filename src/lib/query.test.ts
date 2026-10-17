@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Home } from '../data/types'
 import { DEFAULTS, type Filters } from './filters'
-import { devRank, histogram, inBbox, filterHomes, sortHomes } from './query'
+import { devRank, histogram, inBbox, filterHomes, shareBelow, sortHomes } from './query'
 import { money, priceShort, signedPct } from './format'
 import { viewBbox } from './geo'
 
@@ -65,5 +65,18 @@ describe('devRank', () => {
   it('ranks the most below-estimate sale first and unusual gaps last', () => {
     const order = [h(0.1), h(-0.3), h(-0.6), h(-0.12)].sort((a, b) => devRank(a) - devRank(b)).map((x) => x.dev)
     expect(order).toEqual([-0.3, -0.12, 0.1, -0.6])
+  })
+})
+
+describe('shareBelow', () => {
+  const h = (dev: number) => ({ dev }) as Home
+  it('counts sales at or past the threshold', () => {
+    expect(shareBelow([h(-0.3), h(-0.2), h(-0.05), h(0.2)], -0.1645)).toBe(0.5)
+  })
+  it('treats the threshold itself as below', () => {
+    expect(shareBelow([h(-0.1645)], -0.1645)).toBe(1)
+  })
+  it('is zero with nothing to count', () => {
+    expect(shareBelow([], -0.1645)).toBe(0)
   })
 })

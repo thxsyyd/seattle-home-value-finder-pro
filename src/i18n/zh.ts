@@ -71,8 +71,8 @@ export const zh: Record<MsgKey, string> = {
   'chip.today': '今日价',
   'results.under': '{n} 套可能被低估的房子',
   'results.all': '{n} 套成交房源',
-  'results.subUnder': '地图范围内，成交价比模型估价低至少 10%。2014–15 年成交。',
-  'results.subAll': '地图范围内的每一笔成交，以及它与模型估价的比较。',
+  'results.subUnder': '模型会估算每套房"本该卖多少"。这些房子比估价低的幅度超出了模型的通常误差——地图范围内，2014–15 年成交。',
+  'results.subAll': '地图范围内的每一笔成交。模型会估算每套房"本该卖多少"，颜色表示成交价与它的比较。',
 
   // first-screen filters
   'show.under': '可能被低估',
@@ -141,7 +141,7 @@ export const zh: Record<MsgKey, string> = {
   'card.unusual': '异常成交',
   'dev.below': '低于模型估计 {n}%',
   'dev.above': '高于模型估计 {n}%',
-  'dev.near': '{pct}（在模型通常误差范围内）',
+  'dev.near': '与估价相差 {pct}——在模型 {lo} 到 {hi} 的通常误差范围内',
 
   // home detail
   'back.results': '← 返回结果',
@@ -179,7 +179,7 @@ export const zh: Record<MsgKey, string> = {
   'zip.median': '成交价中位数',
   'zip.ppsf': '中位每平方英尺价格',
   'zip.dev': '与模型估价的典型差距',
-  'zip.below': '可能被低估（低于模型 ≥10%）',
+  'zip.below': '可能被低估',
   'zip.belowVal': '占 {p}%',
   'zip.belowShort': '{p}%',
   'zip.show': '在地图上查看',
@@ -318,7 +318,7 @@ export const zh: Record<MsgKey, string> = {
 
   // added: first-time-user pass
   'explain.q': '什么是“模型估价”？',
-  'explain.a': '电脑模型根据每套房的面积、房龄、品质和位置，以及附近类似房子的成交价，估算这套房“应该”卖多少钱。如果实际成交价低很多，就标为“可能被低估”。模型看不到房屋状况和装修，所以要自己核实。',
+  'explain.a': '电脑模型根据每套房的面积、房龄、品质和位置，以及附近类似房子的成交价，估算它"本该卖多少"。当成交价低于估价的幅度超出模型的通常误差时，就算"可能被低估"。模型看不到房屋状况和装修，所以要自己核实。',
   'intro.text': '找出成交价低于模型预期的房子。点地图上的点或左边的卡片看原因。',
   'intro.close': '关闭',
   'card.axisLow': '成交更低',
@@ -326,7 +326,7 @@ export const zh: Record<MsgKey, string> = {
   'card.today': '按今天的价格约 {price}',
   'chip.waterfront.tip': '只看临水的房子',
   'chip.today.tip': '把 2014–15 年的成交价换算成今天的价格',
-  'show.under.tip': '成交价至少比模型估价低 10%',
+  'show.under.tip': '成交价低于模型估价的幅度超出了模型的通常误差',
   'nav.afford.tip': '我能买得起多少钱的房子？',
   'nav.compare.tip': '并排对比两个邮编',
   'legend.short': '成交价 vs 模型估价',
@@ -367,4 +367,5 @@ export const zh: Record<MsgKey, string> = {
   'zip.explain': '这里一半的房子成交价高于中位数，一半低于它。“与模型估价的典型差距”是中间那笔成交离模型估价有多远，0% 表示模型平均而言估得准。最后一行是看起来可能被低估的成交占比。',
   'charts.pricesHint': '每根柱子是一个价格区间，越高说明这个邮编里落在该区间的成交越多。',
   'charts.sizeHint': '每个点是一笔成交。越靠右房子越大，越靠上价格越高。',
+  'legend.band': '偏离超出通常误差（{lo} 到 {hi}）。',
 }

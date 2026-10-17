@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { applyFilters, DEFAULT_BUDGET, DEFAULTS, effectiveDv, moreFilterCount, parseFilters } from './filters'
+import { applyFilters, DEFAULT_BUDGET, DEFAULTS, effectiveDv, moreFilterCount, parseFilters, UNDER_DEV_FALLBACK } from './filters'
 
 const p = (s: string) => new URLSearchParams(s)
 
@@ -54,10 +54,13 @@ describe('filter URL codec', () => {
 })
 
 describe('derived values', () => {
-  it('uses -10% for "possibly undervalued", nothing for "all", and lets an old dv link win', () => {
-    expect(effectiveDv(parseFilters(p('')))).toBe(-0.1)
-    expect(effectiveDv(parseFilters(p('show=all')))).toBeUndefined()
-    expect(effectiveDv(parseFilters(p('dv=-20')))).toBe(-0.2)
+  it('uses the model\'s own p10 error for "possibly undervalued", nothing for "all", and lets an old dv link win', () => {
+    expect(effectiveDv(parseFilters(p('')), -0.1645)).toBe(-0.1645)
+    expect(effectiveDv(parseFilters(p('show=all')), -0.1645)).toBeUndefined()
+    expect(effectiveDv(parseFilters(p('dv=-20')), -0.1645)).toBe(-0.2)
+  })
+  it('falls back to a fixed threshold until the index has loaded', () => {
+    expect(effectiveDv(parseFilters(p('')))).toBe(UNDER_DEV_FALLBACK)
   })
   it('counts only the filters hidden under "More filters"', () => {
     expect(moreFilterCount(parseFilters(p('beds=2&maxp=any&show=all&sort=price&ll=47.6,-122.3&z=11')))).toBe(0)

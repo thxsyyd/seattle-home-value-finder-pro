@@ -8,6 +8,7 @@ import { useIndex } from '../data/useIndex'
 import { useZipHomes } from '../data/useZipHomes'
 import { useT, type T } from '../i18n'
 import { money, signedPct } from '../lib/format'
+import { shareBelow } from '../lib/query'
 
 const ZipCharts = lazy(() => import('../components/ZipCharts'))
 const isZip = (s: string | undefined) => !!s && /^\d{5}$/.test(s)
@@ -29,12 +30,17 @@ function ZipCompare({ a, b, index, t }: { a: string; b: string; index: IndexData
   const ha = useZipHomes(ra ? a : undefined, index)
   const hb = useZipHomes(rb ? b : undefined, index)
   if (!ra || !rb) return <p>{t('compare.zipMissing')}</p>
+  const p10 = index.model.error_overall.p10
+  const loaded: Record<string, Home[] | undefined> = { [a]: ha.data, [b]: hb.data }
   const rows: [string, (z: ZipRow) => string][] = [
     [t('zip.sales'), (z) => z.n.toLocaleString()],
     [t('zip.median'), (z) => money(z.medPrice)],
     [t('zip.ppsf'), (z) => `$${z.medPpsf}`],
     [t('zip.dev'), (z) => signedPct(z.medDev, 1)],
-    [t('zip.below'), (z) => t('zip.belowShort', { p: Math.round(z.pctBelow * 100) })],
+    [t('zip.below'), (z) => {
+      const homes = loaded[z.zip]
+      return homes ? t('zip.belowShort', { p: Math.round(shareBelow(homes, p10) * 100) }) : '…'
+    }],
   ]
   return (
     <>

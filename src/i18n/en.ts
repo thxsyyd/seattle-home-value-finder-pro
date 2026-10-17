@@ -69,8 +69,8 @@ export const en = {
   'chip.today': 'Today’s dollars',
   'results.under': '{n} possibly undervalued homes',
   'results.all': '{n} homes sold',
-  'results.subUnder': 'Sold at least 10% below the model’s estimate, in the map area. 2014–15 sales.',
-  'results.subAll': 'Every sale in the map area, and how it compares with the model’s estimate.',
+  'results.subUnder': 'A model estimates what each home should have sold for. These sold below that estimate by more than the model’s usual error — in the map area, 2014–15 sales.',
+  'results.subAll': 'Every sale in the map area. A model estimates what each home should have sold for; the colour shows how the price compared.',
 
   // first-screen filters
   'show.under': 'Possibly undervalued',
@@ -139,7 +139,7 @@ export const en = {
   'card.unusual': 'Unusual sale',
   'dev.below': '{n}% below model estimate',
   'dev.above': '{n}% above model estimate',
-  'dev.near': '{pct} vs model (within its usual error)',
+  'dev.near': '{pct} vs the estimate — inside the model’s usual error of {lo} to {hi}',
 
   // home detail
   'back.results': '← Back to results',
@@ -177,7 +177,7 @@ export const en = {
   'zip.median': 'Median sale price',
   'zip.ppsf': 'Median $ per sq ft',
   'zip.dev': 'Typical gap vs. model',
-  'zip.below': 'Possibly undervalued (≥10% below model)',
+  'zip.below': 'Possibly undervalued',
   'zip.belowVal': '{p}% of sales',
   'zip.belowShort': '{p}%',
   'zip.show': 'Show on map',
@@ -316,7 +316,7 @@ export const en = {
 
   // added: first-time-user pass
   'explain.q': 'What is a “model estimate”?',
-  'explain.a': 'A computer model looked at each home’s size, age, quality and location, and at what similar homes nearby sold for, then estimated what the home should have sold for. If the real price was much lower, the home is “possibly undervalued”. The model can’t see condition or finishes, so check before trusting it.',
+  'explain.a': 'A computer model looked at each home’s size, age, quality and location, and at what similar homes nearby sold for, then estimated what it should have sold for. A home counts as “possibly undervalued” when it sold further below that estimate than the model is usually wrong by. The model cannot see condition or finishes, so check before trusting it.',
   'intro.text': 'Homes that sold for less than a model expects. Click a dot or a card to see why.',
   'intro.close': 'Dismiss',
   'card.axisLow': 'Sold for less',
@@ -324,7 +324,7 @@ export const en = {
   'card.today': '≈ {price} in today’s dollars',
   'chip.waterfront.tip': 'Only homes on the waterfront',
   'chip.today.tip': 'Show 2014–15 sale prices in today’s dollars',
-  'show.under.tip': 'Sold at least 10% below the model’s estimate',
+  'show.under.tip': 'Sold below the model’s estimate by more than its usual error',
   'nav.afford.tip': 'How much home can I afford?',
   'nav.compare.tip': 'Compare two ZIP codes side by side',
   'legend.short': 'Sold vs. model estimate',
@@ -365,6 +365,7 @@ export const en = {
   'zip.explain': 'Half of the homes here sold for more than the median price and half for less. “Typical gap vs. model” is how far the middle sale sat from the model’s estimate; 0% means the model was right on average. The last row is the share of sales that look possibly undervalued.',
   'charts.pricesHint': 'Each bar is a price range. A taller bar means more of this ZIP’s sales fell in that range.',
   'charts.sizeHint': 'Each dot is one sale. Further right is a bigger home, higher up is a higher price.',
+  'legend.band': 'Beyond its usual error, {lo} to {hi}.',
 } as const
 
 export type MsgKey = keyof typeof en

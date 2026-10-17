@@ -7,8 +7,8 @@ export type PriceOf = (h: Home) => number
 
 const asSold: PriceOf = (h) => h.price
 
-export function filterHomes(homes: Home[], f: Filters, priceOf: PriceOf = asSold): Home[] {
-  const dv = effectiveDv(f)
+export function filterHomes(homes: Home[], f: Filters, priceOf: PriceOf = asSold, p10?: number): Home[] {
+  const dv = effectiveDv(f, p10)
   return homes.filter((h) => {
     const p = priceOf(h)
     if (f.minp !== undefined && p < f.minp) return false
@@ -48,4 +48,13 @@ export function histogram(prices: number[], step: number, top: number): number[]
   const bins = new Array<number>(Math.ceil(top / step)).fill(0)
   for (const p of prices) bins[Math.min(bins.length - 1, Math.floor(p / step))]++
   return bins
+}
+
+/**
+ * Share of these sales that count as possibly undervalued. Computed here rather than read from the ZIP index,
+ * whose precomputed `pctBelow` uses the pipeline's older fixed 10% threshold.
+ */
+export function shareBelow(homes: Home[], p10: number): number {
+  if (homes.length === 0) return 0
+  return homes.filter((h) => h.dev <= p10).length / homes.length
 }

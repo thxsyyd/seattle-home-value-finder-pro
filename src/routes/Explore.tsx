@@ -76,9 +76,10 @@ export function Explore() {
   const f = filters
   const pi = index.data?.priceIndex
   const priceOf = useMemo(() => makePriceOf(f.adj, pi), [f.adj, pi])
-  const filterKey = JSON.stringify([f.minp, f.maxp, f.beds, f.baths, f.sfMin, f.sfMax, f.ybMin, f.ybMax, f.gr, f.wf, f.dv])
+  const band = index.data?.model.error_overall
+  const filterKey = JSON.stringify([f.minp, f.maxp, f.beds, f.baths, f.sfMin, f.sfMax, f.ybMin, f.ybMax, f.gr, f.wf, f.dv, f.show, band?.p10])
   // eslint-disable-next-line react-hooks/exhaustive-deps -- `f` is only read through filterKey
-  const filtered = useMemo(() => filterHomes(homes, f, priceOf), [homes, filterKey, priceOf])
+  const filtered = useMemo(() => filterHomes(homes, f, priceOf, band?.p10), [homes, filterKey, priceOf, band?.p10])
   const rows = useMemo(
     () => sortHomes(f.follow ? inBbox(filtered, bbox) : filtered, f.sort, priceOf),
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -5,6 +5,7 @@ import { useZipHomes } from '../data/useZipHomes'
 import { useT } from '../i18n'
 import { useFocusOnMount } from '../lib/useFocusOnMount'
 import { money, signedPct } from '../lib/format'
+import { shareBelow } from '../lib/query'
 import { useFilters } from '../state/useFilters'
 import type { ExploreContext } from './Explore'
 
@@ -33,7 +34,7 @@ export function ZipDetail() {
             <dt>{t('zip.median')}</dt><dd>{money(row.medPrice)}</dd>
             <dt>{t('zip.ppsf')}</dt><dd>${row.medPpsf}</dd>
             <dt>{t('zip.dev')}</dt><dd>{signedPct(row.medDev, 1)}</dd>
-            <dt>{t('zip.below')}</dt><dd>{t('zip.belowVal', { p: Math.round(row.pctBelow * 100) })}</dd>
+            <dt>{t('zip.below')}</dt><dd>{homes.data ? t('zip.belowVal', { p: Math.round(shareBelow(homes.data, index.model.error_overall.p10) * 100) }) : '…'}</dd>
           </dl>
           <p className="hint">{t('zip.explain')}</p>
           <p style={{ display: 'flex', gap: 'var(--s-2)', flexWrap: 'wrap', alignItems: 'center' }}>

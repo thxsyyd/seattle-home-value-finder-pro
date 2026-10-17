@@ -273,3 +273,7 @@ a.sim-row:hover, .sim-row.is-hover { box-shadow: var(--shadow-1); outline: 2px s
 .sim-sub { color: var(--ink-2); font-size: var(--fs-small); }
 .sim-tag { font-size: var(--fs-tiny); font-weight: var(--fw-strong); text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-2); }
 .sim-compare { margin: var(--s-1) 0 0 var(--s-3); font-size: var(--fs-small); }
+
+.legend ul.legend-row { display: flex; flex-wrap: wrap; gap: 2px var(--s-3); max-width: 46ch; }
+.legend ul.legend-row li { white-space: nowrap; }
+.legend .legend-sub { white-space: normal; max-width: 46ch; }

@@ -3,11 +3,16 @@ export type SortKey = 'dev' | 'price' | 'ppsf' | 'newest' | 'sqft'
 export type LayerKey = 'none' | 'hex' | 'zip'
 export type MetricKey = 'ppsf' | 'price' | 'dev'
 export type ViewKey = 'map' | 'list'
-/** "under" keeps only sales at least 10% below the model estimate; "all" shows every sale. */
+/** "under" keeps only sales further below the estimate than the model's own usual error; "all" shows every sale. */
 export type ShowKey = 'under' | 'all'
 
-/** A sale is "possibly undervalued" when it sold at least this far below the model estimate. */
-export const UNDER_DEV = -0.1
+/**
+ * A sale is "possibly undervalued" when it sold further below the estimate than the model is usually wrong by,
+ * i.e. below the model's own p10 error. Using one threshold for the filter and for the blue/grey split keeps
+ * "possibly undervalued" and "below the estimate" meaning the same thing.
+ * This constant is only the stand-in until the index (which carries the real p10) has loaded.
+ */
+export const UNDER_DEV_FALLBACK = -0.16
 export const DEFAULT_BUDGET = 500_000
 
 export interface Filters {
@@ -131,9 +136,9 @@ export function applyFilters(base: URLSearchParams, f: Filters): URLSearchParams
   return p
 }
 
-/** The deviation threshold in force: an explicit `dv` (old links) wins, otherwise "possibly undervalued" means -10% or lower. */
-export function effectiveDv(f: Filters): number | undefined {
-  return f.dv ?? (f.show === 'under' ? UNDER_DEV : undefined)
+/** The deviation threshold in force: an explicit `dv` (old links) wins, otherwise the model's p10 error. */
+export function effectiveDv(f: Filters, p10?: number): number | undefined {
+  return f.dv ?? (f.show === 'under' ? p10 ?? UNDER_DEV_FALLBACK : undefined)
 }
 
 /** Number of active filters inside "More filters" (budget, bedrooms and the show toggle are always visible). */

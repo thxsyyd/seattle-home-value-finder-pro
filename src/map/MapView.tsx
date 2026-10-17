@@ -8,7 +8,7 @@ import { fetchJson } from '../data/client'
 import type { BBox, Home, IndexData } from '../data/types'
 import type { Filters } from '../lib/filters'
 import type { PriceOf } from '../lib/query'
-import { money } from '../lib/format'
+import { money, signedPct } from '../lib/format'
 import { useT } from '../i18n'
 import { reducedMotion } from '../a11y/prefs'
 import { setHovered, useHover } from '../state/hoverStore'
@@ -300,7 +300,7 @@ export default function MapView({ index, filters, homes, selected, listed, simil
         </p>
       )}
       <div className="legend-slot">
-        <Legend metric={filters.metric} layer={filters.layer} />
+        <Legend metric={filters.metric} layer={filters.layer} lo={band && signedPct(band.p10)} hi={band && signedPct(band.p90)} />
       </div>
     </div>
   )

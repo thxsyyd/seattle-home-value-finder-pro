@@ -18,7 +18,7 @@ headless browser, which does not draw map tiles, so it is the list only.)
 
 ## What it does
 
-The first screen answers one question: **which homes sold for at least 10% less than a price model expected, within my
+The first screen answers one question: **which homes sold further below a price model's estimate than the model is usually wrong by, within my
 budget?** It opens on Seattle and Bellevue with "Possibly undervalued" and a $500k budget already chosen.
 
 - **A search pill with three parts** (ZIP code, budget ceiling, bedrooms), a row of chips (Filters, Possibly undervalued,
