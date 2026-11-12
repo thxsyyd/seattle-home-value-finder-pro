@@ -55,7 +55,7 @@ for line in wrap(d, "What King County homes sold for in 2014–15, compared with
     y += 40
 small = font(REG_PATHS, 22)
 d.text((x, H - 96), "Past sales, not listings", font=font(FONT_PATHS, 22), fill="#1b2430")
-d.text((x, H - 62), "By Daisy Tang · INFO 5002, Northeastern University", font=small, fill="#5b6675")
+d.text((x, H - 62), "By Daisy Tang", font=small, fill="#5b6675")
 
 (ROOT / "public").mkdir(exist_ok=True)
 img.save(ROOT / "public/og.jpg", quality=88, optimize=True)

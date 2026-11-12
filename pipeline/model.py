@@ -67,8 +67,8 @@ def model_card(df: pd.DataFrame) -> dict:
     card = {
         "cv": {"folds": N_FOLDS, "grouped_by": "house id", "seed": SEED},
         "models": {
-            "linear_course_features": _metrics(y, df["pred_lin"]),
-            "random_forest_course_features": _metrics(y, df["pred_rf"]),
+            "linear_baseline": _metrics(y, df["pred_lin"]),
+            "random_forest_baseline": _metrics(y, df["pred_rf"]),
             "hgb_17_features_log": _metrics(y, df["pred_hgb_nonb"]),
             "hgb_17_features_log_neighbors": _metrics(y, df["pred"]),
         },
