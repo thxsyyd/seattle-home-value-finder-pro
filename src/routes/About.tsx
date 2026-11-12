@@ -3,10 +3,9 @@ import { useIndex } from '../data/useIndex'
 import { useLang, useT } from '../i18n'
 import { money, priceShort, signedPct } from '../lib/format'
 
-const LEGACY = `${import.meta.env.BASE_URL}legacy/Seattle_Home_Value_Dashboard_v4.html`
 const MODELS = [
-  ['about.m.linear', 'linear_course_features'],
-  ['about.m.rf', 'random_forest_course_features'],
+  ['about.m.linear', 'linear_baseline'],
+  ['about.m.rf', 'random_forest_baseline'],
   ['about.m.hgb', 'hgb_17_features_log'],
   ['about.m.hgbn', 'hgb_17_features_log_neighbors'],
 ] as const
@@ -46,7 +45,7 @@ export function About() {
         {m && <p className="hint">{t('about.cv', { p10: signedPct(m.error_overall.p10), p90: signedPct(m.error_overall.p90) })}</p>}
         <h3>{t('about.why.h')}</h3>
         <p>
-          {t('about.why.p1')} <a href={LEGACY}>{t('about.why.link')}</a>{zh ? '。' : '. '}{t('about.why.p2')}
+          {t('about.why.p1')}{zh ? '' : ' '}{t('about.why.p2')}
         </p>
         {m && (
           <table>

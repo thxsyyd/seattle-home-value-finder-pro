@@ -3,7 +3,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 RAW_CSV = ROOT / "data" / "raw" / "kc_house_data.csv"
-# 21 MB statewide ZCTA file from the course folder; zips.py caches the King County subset next to the CSV.
+# 21 MB statewide ZCTA file kept one level above the repo; zips.py caches the King County subset next to the CSV.
 STATE_ZCTA = ROOT.parent / "wa_washington_zip_codes_geo.min.json"
 KC_ZCTA_RAW = ROOT / "data" / "raw" / "king_county_zcta_raw.geojson"
 WORK = ROOT / "data" / "work"
@@ -13,7 +13,7 @@ SEED = 42
 N_FOLDS = 5
 K_NEIGHBORS = 20
 
-# Features used by the course notebook (LinearRegression, R^2 0.647 on its 80/20 split).
+# Baseline feature set (LinearRegression, R^2 0.647 on an 80/20 split).
 COURSE_FEATURES = ["sqft_living", "bathrooms", "grade", "view", "lat", "long"]
 BASE_FEATURES = [
     "bedrooms", "bathrooms", "sqft_living", "sqft_lot", "floors", "waterfront", "view",

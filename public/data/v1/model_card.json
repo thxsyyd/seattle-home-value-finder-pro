@@ -5,12 +5,12 @@
   "seed": 42
  },
  "models": {
-  "linear_course_features": {
+  "linear_baseline": {
    "r2": 0.6431467310278045,
    "mae": 136828.90032332123,
    "mape_median": 0.21254062296114176
   },
-  "random_forest_course_features": {
+  "random_forest_baseline": {
    "r2": 0.8609909287146814,
    "mae": 73291.55948031765,
    "mape_median": 0.09373615396825387

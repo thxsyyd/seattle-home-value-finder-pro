@@ -1,13 +1,13 @@
 # Seattle Home Value Finder
 
+[![ci](https://github.com/thxsyyd/seattle-home-value-finder-pro/actions/workflows/ci.yml/badge.svg)](https://github.com/thxsyyd/seattle-home-value-finder-pro/actions/workflows/ci.yml)
+
 Explore every home that sold in King County, Washington between May 2014 and May 2015, and see which sold for much
-less (or more) than a price model expected. An interactive map and list with shareable links, built as the polished
-follow-up to my INFO 5002 (Introduction to Python) final project at Northeastern University.
+less (or more) than a price model expected. An interactive map and list with shareable links.
 
 **Live site: https://seattle-home-value-finder.pages.dev**
 
-By Daisy Tang. The graded course version (linear regression, R² 0.647, single-file Leaflet page) is kept unchanged and is
-still reachable from this site's About page.
+By Daisy Tang.
 
 | Desktop | Phone: list | Phone: map |
 |---|---|---|
@@ -90,7 +90,7 @@ pipeline/.venv/bin/python -m pipeline.build          # model, H3 hexagons, ZIP p
 pipeline/.venv/bin/python -m pytest pipeline         # invariants: row counts, no leakage, size budgets, h3 vs h3-js
 ```
 
-The statewide ZIP file is read from the course folder (`config.STATE_ZCTA`); the 70 King County polygons are cached in
+The statewide ZIP file is read from `config.STATE_ZCTA` (one level above the repo); the 70 King County polygons are cached in
 `data/raw/`. Downloads (FRED, FHFA) are cached in `data/work/` (git-ignored).
 
 ## How it is built
@@ -125,4 +125,4 @@ scripts/deploy.sh           # lint, test, build, size check, upload dist/
 - Price indexes: S&P Dow Jones Indices (Case-Shiller Seattle) and Freddie Mac rates via FRED (Federal Reserve Bank of St.
   Louis); FHFA House Price Index (ZIP5, developmental).
 - ZIP boundaries: U.S. Census Bureau ZCTAs. Colour scales: ColorBrewer.
-- Code: MIT, see [LICENSE](LICENSE).
+- Code: MIT, see [LICENSE](LICENSE). The licence covers the code only; the data above keeps its own terms.
